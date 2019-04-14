@@ -1,7 +1,6 @@
 package com.example.maxbank;
 
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -32,12 +31,11 @@ import java.util.TimeZone;
 import javax.annotation.Nullable;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-@RequiresApi(api = Build.VERSION_CODES.O)
+
 public class MainActivity extends AppCompatActivity implements
         AccountBalanceFragment.OnAccountBalanceInteractionListener,
         PaymentFragment.OnPaymentInteractionListener, TransactionFragment.OnTransactionInteractionListener,

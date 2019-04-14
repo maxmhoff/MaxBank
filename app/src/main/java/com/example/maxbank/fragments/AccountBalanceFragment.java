@@ -125,8 +125,6 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
         mView = null;
     }
 
-
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -154,7 +152,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
             public void run() {
                 fab.show();
             }
-        }, 800);
+        }, getResources().getInteger(R.integer.fab_show_delay));
 
     }
 
