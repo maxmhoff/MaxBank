@@ -1,6 +1,6 @@
-#MaxBank
+# MaxBank
 
-##Thoughts:
+## Thoughts:
 To avoid complexity I'm *not* using the balance of the accounts in FireStore (they have been set to zero and are not updated). 
 Instead I'm calculating the balance via transactions. This way the balance is automatically updated, whenever i make a transaction.
 It would be a terrible approach, if you were to make an actual bank app. But... this is just a mock-up.
@@ -10,7 +10,7 @@ It also requires way too few details. In fact maybe accounts should only be crea
 
 
 
-##TO-DO:
+## TO-DO:
 1. Implement login functionality 
 	* Add a login activity
 	* Add a logout button
@@ -19,5 +19,5 @@ It also requires way too few details. In fact maybe accounts should only be crea
 
 3. Add transaction functionality
 
-##Known bugs
+## Known bugs
 * If a transaction is added or modified while viewing the corresponding account (AccountFragment) the size of the item_layout stretches.
