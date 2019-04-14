@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="@color/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="10dp"
+        android:weightSum="2">
+    <TextView
+        android:id="@+id/transactionText"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:textColor="@color/colorTextDark"
+        android:textSize="16sp"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/transactionAmount"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:gravity="right|center_vertical"
+        android:textColor="@color/colorTextDark"
+        android:textSize="16sp"
+        android:layout_weight="1"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:layout_marginHorizontal="20dp"
+        android:weightSum="2">
+    <TextView
+        android:id="@+id/transactionEntryDate"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:gravity="start|center"
+        android:textSize="12sp"
+        android:textColor="@color/colorTextLight"
+        android:layout_weight="1"
+        />
+    <TextView
+        android:id="@+id/transactionAccountBalance"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:gravity="end|center"
+        android:textSize="12sp"
+        android:textColor="@color/colorTextLight"
+        android:layout_weight="1"
+        />
+    </LinearLayout>
+
+</LinearLayout>

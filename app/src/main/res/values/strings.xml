@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MaxBank</string>
+    <string name="overview">OVERBLIK</string>
+    <string name="pay">BETAL</string>
+    <string name="transaction">OVERFØR</string>
+    <string name="overviewTitle">Mine konti</string>
+    <string name="payTitle">Indbetaling</string>
+    <string name="transactionTitle">Overførsel</string>
+    <string name="inputAccountName">Kontonavn</string>
+    <string name="Create">Opret</string>
+    <string name="Cancel">Fortryd</string>
+    <string name="createAccountTitle">Vil du oprette en ny konto?</string>
+    <string name="createAccountDescription">Indtast det navn, du ønsker kontoen skal have:</string>
+
+    <string name="USER_KEY">USER_KEY</string>
+    <string name="ACCOUNT_KEY">ACCOUNT_KEY</string>
+</resources>

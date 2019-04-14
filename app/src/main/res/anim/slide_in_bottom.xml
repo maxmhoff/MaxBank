@@ -1,0 +1,8 @@
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <translate
+        android:duration="@integer/anim_duration_long"
+        android:fromYDelta="100%p"
+        android:interpolator="@android:anim/overshoot_interpolator"
+        android:toYDelta="0" />
+</set>

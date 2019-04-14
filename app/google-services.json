@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1083929850531",
+    "firebase_url": "https://maxbank-f15b2.firebaseio.com",
+    "project_id": "maxbank-f15b2",
+    "storage_bucket": "maxbank-f15b2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1083929850531:android:e514e1ebac06cb4c",
+        "android_client_info": {
+          "package_name": "com.example.maxbank"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1083929850531-ejk377k70rm7j21d76beo5hpj6h403n7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcntMkaMMlYSX0TxIQiVneFjYGLaQvzBg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1083929850531-ejk377k70rm7j21d76beo5hpj6h403n7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
