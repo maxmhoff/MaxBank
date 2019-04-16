@@ -47,7 +47,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
 
     private User user;
 
-    private static String TAG = "AccountBalanceFragment";
+    private static final String TAG = "AccountBalanceFragment";
 
     private View mView;
 

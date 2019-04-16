@@ -43,7 +43,7 @@ public class AccountFragment extends Fragment {
 
     private Account account;
 
-    private static String TAG = "AccountFragment";
+    private static final String TAG = "AccountFragment";
 
     private View mView;
     private TextView headline;
