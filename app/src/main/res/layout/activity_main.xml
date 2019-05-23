@@ -8,6 +8,7 @@
     tools:context="MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:background="@color/colorPrimary"
         android:layout_width="match_parent"
         android:layout_height="40dp">
 
@@ -44,6 +45,7 @@
     </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
+        style="@style/Widget.MaterialComponents.BottomNavigationView.Colored"
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

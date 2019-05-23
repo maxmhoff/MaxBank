@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,13 +22,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Spinner;
+import android.widget.Toast;
 
+import com.example.maxbank.MainActivity;
 import com.example.maxbank.R;
 import com.example.maxbank.adapters.AccountAdapter;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
 
 
 /**
@@ -135,6 +143,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
+
     public interface OnAccountBalanceInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
@@ -157,7 +166,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
     }
 
     public void updateView(){
-        // updateView() should only be used when the view is active.
+        // null check since updateView() should only be used when the view is active.
         if(mView != null){
             accounts = mView.findViewById(R.id.accounts);
             if(user.getAccounts() != null){
@@ -200,14 +209,48 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
             public void onClick(View v) {
                 switch (v.getId()){
                     case R.id.fab:
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.AlertDialogCustom).setTitle(R.string.createAccountTitle);
-                        View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.create_account_form, (ViewGroup) getView(), false);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.AlertDialogCustom).setTitle(R.string.create_account_title);
+                        final View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.create_account_form, (ViewGroup) getView(), false);
                         builder.setView(viewInflated);
-                        builder.setMessage(R.string.createAccountDescription)
-                                .setNegativeButton(R.string.Cancel, null)
-                                .setPositiveButton(R.string.Create, null)
-                                .show();
 
+                        // populating the spinner
+                        final AutoCompleteTextView textViewAccountType = viewInflated.findViewById(R.id.create_account_type);
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
+                                R.layout.dropdown_menu_popup_item, getResources().getStringArray(R.array.account_types));
+                        if(textViewAccountType != null){
+                            textViewAccountType.setAdapter(adapter);
+                        }
+
+                        final TextInputEditText inputAccountName =  viewInflated.findViewById(R.id.create_account_name);
+
+                        // to dismiss the keyboard, when we click somewhere else.
+                        inputAccountName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                            @Override
+                            public void onFocusChange(View v, boolean hasFocus) {
+                                InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.hideSoftInputFromWindow(inputAccountName.getWindowToken(), 0);
+                            }
+                        });
+
+
+                        builder.setMessage(R.string.create_account_description)
+                                .setNegativeButton(R.string.cancel, null)
+                                .setPositiveButton(R.string.create, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // checking if inputs are empty before calling the repo to store the account
+                                        if(!inputAccountName.getText().toString().equals("") &&
+                                                !textViewAccountType.getText().toString().equals("")){
+                                            ((MainActivity)getActivity()).getFireStoreRepo().saveAccount(
+                                                    user.getId(),
+                                                    inputAccountName.getText().toString(),
+                                                    textViewAccountType.getText().toString().toLowerCase(),
+                                                    0);
+                                        }
+
+                                    }
+                                })
+                                .show();
                         break;
                 }
             }

@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private String userId = "rnOMcdTSeDRiZ6JCBDxnMyeuRkI2";
     private User user;
+    private FireStoreRepo fireStoreRepo = new FireStoreRepo(userId, this);
 
     private FragmentManager fm = getSupportFragmentManager();
     private AccountBalanceFragment accountBalanceFragment = new AccountBalanceFragment();
@@ -47,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        new FireStoreRepo(userId, this);
+        fireStoreRepo = new FireStoreRepo(userId, this);
+        fireStoreRepo.getUser();
     }
 
     private void initViews(){
@@ -77,19 +79,19 @@ public class MainActivity extends AppCompatActivity implements
                 accountBalanceFragment.setArguments(bundle);
                 transaction.replace(R.id.fragment_container, accountBalanceFragment);
                 transaction.commit();
-                title.setText(getString(R.string.overviewTitle));
+                title.setText(getString(R.string.overview_title));
                 break;
             case R.id.pay:
                 paymentFragment.setArguments(bundle);
                 transaction.replace(R.id.fragment_container, paymentFragment);
                 transaction.commit();
-                title.setText(getString(R.string.payTitle));
+                title.setText(getString(R.string.pay_title));
                 break;
             case R.id.transaction:
                 transactionFragment.setArguments(bundle);
                 transaction.replace(R.id.fragment_container, transactionFragment);
                 transaction.commit();
-                title.setText(getString(R.string.transactionTitle));
+                title.setText(getString(R.string.transaction_title));
                 break;
         }
     }
@@ -112,6 +114,10 @@ public class MainActivity extends AppCompatActivity implements
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public FireStoreRepo getFireStoreRepo() {
+        return fireStoreRepo;
     }
 
     public AccountBalanceFragment getAccountBalanceFragment() {

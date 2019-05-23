@@ -16,12 +16,14 @@ import androidx.annotation.RequiresApi;
 public class Account implements Parcelable {
     private String id;
     private String name;
+    private String type;
     private BigDecimal balance;
     private List<Transaction> transactions;
 
-    public Account(String id, String name, BigDecimal balance) {
+    public Account(String id, String name, String type, BigDecimal balance) {
         this.id = id;
         this.name = name;
+        this.type = type;
         this.balance = balance;
         transactions = new ArrayList<>();
     }
@@ -29,6 +31,7 @@ public class Account implements Parcelable {
     protected Account(Parcel in) {
         id = in.readString();
         name = in.readString();
+        type = in.readString();
         balance = (BigDecimal) in.readSerializable();
         transactions = in.createTypedArrayList(Transaction.CREATOR);
     }
@@ -100,6 +103,7 @@ public class Account implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
         dest.writeString(name);
+        dest.writeString(type);
         dest.writeSerializable(balance);
         dest.writeTypedList(transactions);
     }

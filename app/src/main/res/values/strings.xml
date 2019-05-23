@@ -3,14 +3,26 @@
     <string name="overview">OVERBLIK</string>
     <string name="pay">BETAL</string>
     <string name="transaction">OVERFØR</string>
-    <string name="overviewTitle">Mine konti</string>
-    <string name="payTitle">Indbetaling</string>
-    <string name="transactionTitle">Overførsel</string>
-    <string name="inputAccountName">Kontonavn</string>
-    <string name="Create">Opret</string>
-    <string name="Cancel">Fortryd</string>
-    <string name="createAccountTitle">Vil du oprette en ny konto?</string>
-    <string name="createAccountDescription">Indtast det navn, du ønsker kontoen skal have:</string>
+    <string name="overview_title">Mine konti</string>
+    <string name="pay_title">Indbetaling</string>
+    <string name="transaction_title">Overførsel</string>
+    <string name="input_account_name">Kontonavn</string>
+    <string name="create">Opret</string>
+    <string name="cancel">Fortryd</string>
+    <string name="create_account_title">Vil du oprette en ny konto?</string>
+    <string name="create_account_description">Indtast et navn, vælg en kontotype og tryk opret.</string>
+
+    <string name="hint_account_types">Kontotype:</string>
+    <string-array name="account_types">
+        <item name="account_default">Privat</item>
+        <item name="account_budget">Budget</item>
+        <item name="account_pension">Pension</item>
+        <item name="account_savings">Opsparing</item>
+        <item name="account_business">Erhverv</item>
+    </string-array>
+
+
+
 
     <string name="USER_KEY">USER_KEY</string>
     <string name="ACCOUNT_KEY">ACCOUNT_KEY</string>

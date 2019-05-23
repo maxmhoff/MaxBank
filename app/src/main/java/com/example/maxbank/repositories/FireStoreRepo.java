@@ -8,6 +8,8 @@ import com.example.maxbank.fragments.AccountBalanceFragment;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.Transaction;
 import com.example.maxbank.objects.User;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -19,10 +21,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.annotation.Nullable;
+
+import androidx.annotation.NonNull;
 
 public class FireStoreRepo {
 
@@ -44,21 +50,20 @@ public class FireStoreRepo {
         this.mainActivity = mainActivity;
         this.accountBalanceFragment = mainActivity.getAccountBalanceFragment();
         adjustTimeZone();
-        fetchUser();
     }
 
-    private void fetchUser(){
-        DocumentReference docRef = db.document("users/" + userId);
+    public void getUser(){
+        final DocumentReference docRef = db.document("users/" + userId);
         docRef.addSnapshotListener(mainActivity, new EventListener<DocumentSnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if(documentSnapshot.exists()) {
-                    String name = documentSnapshot.getString("name");
-                    Date dayOfBirth = documentSnapshot.getTimestamp("day_of_birth").toDate();
+            public void onEvent(@Nullable DocumentSnapshot docSnap, @Nullable FirebaseFirestoreException e) {
+                if(docSnap.exists()) {
+                    String name = docSnap.getString("name");
+                    Date dayOfBirth = docSnap.getTimestamp("day_of_birth").toDate();
                     mainActivity.setUser(new User(userId, name, dayOfBirth));
                     fetchAccounts();
                 } else if (e != null){
-                    Log.w(TAG, "Got an exception while trying to retrieve user data.");
+                    Log.w(TAG, "Got an exception while trying to retrieve user data: \n" + docSnap);
                 }
             }
         });
@@ -81,12 +86,13 @@ public class FireStoreRepo {
                                 try {
                                     String id = doc.getId();
                                     String name = doc.getString("name");
+                                    String type = doc.getString("type");
                                     BigDecimal balance = BigDecimal.valueOf(doc.getDouble("balance"));
-                                    Account account = new Account(id, name, balance);
+                                    Account account = new Account(id, name, type, balance);
                                     accounts.add(account);
                                     fetchTransactions(account);
                                 } catch (NullPointerException nPEX){
-                                    Log.w(TAG, "Got an exception while trying to retrieve account data.");
+                                    Log.w(TAG, "Got an exception while trying to retrieve account data: \n" + doc + "\n" + nPEX.toString());
                                     return;
                                 }
                             }
@@ -122,7 +128,7 @@ public class FireStoreRepo {
                                     Transaction transaction = new Transaction(id, amount, dayOfBirth, text, accountId);
                                     assignTransaction(transaction);
                                 } catch (NullPointerException nPEX){
-                                    Log.e(TAG, "Got an exception while trying to retrieve transaction data.");
+                                    Log.e(TAG, "Got a NullPointerException while trying to retrieve transaction data: \n" + doc + "\n" + nPEX.toString());
                                     return;
                                 }
                             }
@@ -139,7 +145,36 @@ public class FireStoreRepo {
                 }
             }
         }
-        accountBalanceFragment.updateView();
+        try{
+            accountBalanceFragment.updateView();
+        } catch (NullPointerException nPEX){
+            Log.w(TAG, "Got a NullPointerException while trying to use accountBalanceFragment.updateView(): \n" + nPEX.toString());
+        }
+
+    }
+
+    public void saveAccount(String userId, String name, String type, double balance){
+        Map<String, Object> data = new HashMap<>();
+        data.put("user_id", userId);
+        data.put("name", name);
+        data.put("type", type);
+        data.put("balance", balance);
+
+        db.collection("accounts")
+                .add(data)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+
     }
 
     private void adjustTimeZone(){
