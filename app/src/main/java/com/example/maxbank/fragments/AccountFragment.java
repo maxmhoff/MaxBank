@@ -143,11 +143,11 @@ public class AccountFragment extends Fragment {
         headline = mView.findViewById(R.id.headline);
         headline.setText(account.getName());
         transactions = mView.findViewById(R.id.transactions);
-        updateView();
+        updateViews();
     }
 
-    public void updateView(){
-        // updateView() should only be used when the view is active.
+    public void updateViews(){
+        // updateViews() should only be used when the view is active.
         if(mView != null){
             // should probably not be done within the fragment
             ArrayList<BigDecimal> accountBalanceList = new ArrayList<>();

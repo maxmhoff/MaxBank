@@ -6,7 +6,8 @@
     <color name="colorAccent">#1E88E5</color>
     <color name="colorSecondary">#1E88E5</color>
     <color name="colorOnSecondary">#FFF</color>
-    <color name="colorSecondaryDark">#303F9F</color>
+    <color name="colorSecondaryDark">#1E88E5</color>
+    <color name="colorSecondaryLight">#64B5F6</color>
     <color name="colorIncome">#66BB6A</color>
     <color name="colorExpense">#EF5350</color>
     <color name="colorTextDark">#333</color>

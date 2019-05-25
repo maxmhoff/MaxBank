@@ -13,15 +13,15 @@
         <item name="colorControlHighlight">@color/colorBackground</item>
     </style>
 
-    <style name="AlertDialogCustom" parent="@style/Theme.MaterialComponents.Light.Dialog.Alert">
-        <!--buttons color-->
+    <style name="AlertDialogCustom" parent="@style/Theme.MaterialComponents.Light.Dialog">
         <item name="colorAccent">@color/colorAccent</item>
-        <!--item RadioButton or CheckBox color-->
         <item name="colorControlActivated">@color/colorAccent</item>
         <item name="colorPrimary">@color/colorAccent</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <!--<item name="android:listChoiceIndicatorMultiple"></item>-->
-        <!--<item name="android:listChoiceIndicatorSingle"></item>-->
     </style>
 
+    <style name="PopupCustom" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <item name="android:textColor">@color/colorTextDark</item>
+        <item name="android:itemBackground">@color/colorBackground</item>
+    </style>
 </resources>

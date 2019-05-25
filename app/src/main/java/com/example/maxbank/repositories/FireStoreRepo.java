@@ -8,8 +8,12 @@ import com.example.maxbank.fragments.AccountBalanceFragment;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.Transaction;
 import com.example.maxbank.objects.User;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -35,6 +39,7 @@ public class FireStoreRepo {
     private static final String TAG = "FireStoreRepo";
 
     private String userId;
+    private User user;
 
     private MainActivity mainActivity;
 
@@ -52,6 +57,10 @@ public class FireStoreRepo {
         adjustTimeZone();
     }
 
+    public FireStoreRepo(){
+
+    }
+
     public void getUser(){
         final DocumentReference docRef = db.document("users/" + userId);
         docRef.addSnapshotListener(mainActivity, new EventListener<DocumentSnapshot>() {
@@ -60,7 +69,8 @@ public class FireStoreRepo {
                 if(docSnap.exists()) {
                     String name = docSnap.getString("name");
                     Date dayOfBirth = docSnap.getTimestamp("day_of_birth").toDate();
-                    mainActivity.setUser(new User(userId, name, dayOfBirth));
+                    String branch = docSnap.getString("branch");
+                    mainActivity.setUser(new User(userId, name, dayOfBirth, branch));
                     fetchAccounts();
                 } else if (e != null){
                     Log.w(TAG, "Got an exception while trying to retrieve user data: \n" + docSnap);
@@ -71,7 +81,7 @@ public class FireStoreRepo {
 
     private void fetchAccounts(){
         db.collection("accounts")
-                .whereEqualTo("user_id", mainActivity.getUser().getId())
+                .whereEqualTo("user_id", userId)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -100,7 +110,7 @@ public class FireStoreRepo {
                         mainActivity.getUser().setAccounts(accounts);
                         if(initialLoad){
                             initialLoad = false;
-                            mainActivity.openFragment(R.id.account_balance);
+                            mainActivity.initViews();
                         }
                     }
                 });
@@ -114,7 +124,7 @@ public class FireStoreRepo {
                     public void onEvent(@Nullable QuerySnapshot value,
                                         @Nullable FirebaseFirestoreException e) {
                         if(e != null){
-                            Log.w(TAG, "Got a FirebasFireStoreException while trying to retrieve transaction data");
+                            Log.w(TAG, "Got a FirebaseFireStoreException while trying to retrieve transaction data");
                             return;
                         }
                         for (QueryDocumentSnapshot doc : value){
@@ -146,14 +156,57 @@ public class FireStoreRepo {
             }
         }
         try{
-            accountBalanceFragment.updateView();
+            accountBalanceFragment.updateViews();
         } catch (NullPointerException nPEX){
-            Log.w(TAG, "Got a NullPointerException while trying to use accountBalanceFragment.updateView(): \n" + nPEX.toString());
+            Log.w(TAG, "Got a NullPointerException while trying to use accountBalanceFragment.updateViews(): \n" + nPEX.toString());
         }
 
     }
 
-    public void saveAccount(String userId, String name, String type, double balance){
+    // level of abstractions is "okay" on every function below this line:
+
+    // Could probably fetch the userId straight from firebase auth within this class.
+    public void saveUser(String userId, String name, Date dayOfBirth, String branch){
+        Timestamp day_of_birth = new Timestamp(dayOfBirth);
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", name);
+        data.put("day_of_birth", day_of_birth);
+        data.put("branch", branch);
+        db.collection("users").document(userId)
+                .set(data)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
+    }
+
+    public void updateUserBranch(final String userId, String branch){
+        db.collection("users").document(userId).update("branch", branch)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully updated!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error updating the branch field of user_id: " + userId, e);
+                    }
+                });
+
+    }
+
+    public void saveAccount(String userId, String name, String type, BigDecimal bigDecimalBalance){
+        double balance = bigDecimalBalance.doubleValue();
         Map<String, Object> data = new HashMap<>();
         data.put("user_id", userId);
         data.put("name", name);
@@ -165,20 +218,43 @@ public class FireStoreRepo {
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
+                        Log.d(TAG, "Account written with ID: " + documentReference.getId());
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
+                        Log.w(TAG, "Error adding account", e);
                     }
                 });
+    }
 
+    public void saveTransaction(Transaction transaction){
+        double amount = transaction.getAmount().doubleValue();
+        Timestamp entry_date = new Timestamp(transaction.getEntryDate());
+        Map<String, Object> data = new HashMap<>();
+        data.put("account_id", transaction.getAccountId());
+        data.put("amount", amount);
+        data.put("entry_date", entry_date);
+        data.put("text", transaction.getText());
+        db.collection("transactions")
+                .add(data)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "Transaction with ID: " + documentReference.getId() + " was successfully");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding transaction", e);
+                    }
+                });
     }
 
     private void adjustTimeZone(){
-        // Could probably find a more dynamic way to do this. Apparently my JVM & my compiler operates in different time zones
+        // Could probably find a more dynamic way to do this. Apparently my JVM & my compiler operates in different time zones.
         TimeZone timeZone;
         timeZone = TimeZone.getTimeZone("GMT+2:00");
         TimeZone.setDefault(timeZone);

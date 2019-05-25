@@ -25,17 +25,18 @@ import android.view.animation.LayoutAnimationController;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Spinner;
-import android.widget.Toast;
 
-import com.example.maxbank.MainActivity;
 import com.example.maxbank.R;
 import com.example.maxbank.adapters.AccountAdapter;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.User;
+import com.example.maxbank.repositories.FireStoreRepo;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -151,7 +152,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
 
     private void initViews(){
         accounts = mView.findViewById(R.id.accounts);
-        updateView();
+        updateViews();
         fab = mView.findViewById(R.id.fab);
         fab.hide();
         fab.setOnClickListener(onClickListener());
@@ -165,26 +166,30 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
 
     }
 
-    public void updateView(){
-        // null check since updateView() should only be used when the view is active.
+    public void updateViews(){
+        // null check since updateViews() should only be used when the view is active.
         if(mView != null){
             accounts = mView.findViewById(R.id.accounts);
-            if(user.getAccounts() != null){
-                AccountAdapter accountAdapter = new AccountAdapter(mView.getContext(), user.getAccounts());
-                accounts.setAdapter(accountAdapter);
-                accountAdapter.setOnItemClickListener(AccountBalanceFragment.this);
-                accounts.setLayoutManager(new LinearLayoutManager(getContext()));
+            try {
+                if (user.getAccounts() != null) {
+                    AccountAdapter accountAdapter = new AccountAdapter(mView.getContext(), user.getAccounts());
+                    accounts.setAdapter(accountAdapter);
+                    accountAdapter.setOnItemClickListener(AccountBalanceFragment.this);
+                    accounts.setLayoutManager(new LinearLayoutManager(getContext()));
 
-                int resId = R.anim.layout_animation_rise_up;
-                LayoutAnimationController animation = AnimationUtils.loadLayoutAnimation(getContext(), resId);
-                accounts.setLayoutAnimation(animation);
+                    int resId = R.anim.layout_animation_rise_up;
+                    LayoutAnimationController animation = AnimationUtils.loadLayoutAnimation(getContext(), resId);
+                    accounts.setLayoutAnimation(animation);
 
-            } else {
-                Log.w(TAG, "Failed to init the accountAdapter since \"user.getAccounts\" was null.");
+                } else {
+                    Log.w(TAG, "Failed to init the accountAdapter since \"user.getAccounts\" was null.");
+                }
+            } catch (NullPointerException nPEX){
+                Log.d(TAG, "Encountered a NullPointerException when trying to retrieve account");
             }
         }
 
-        accountFragment.updateView();
+        accountFragment.updateViews();
 
     }
 
@@ -206,10 +211,10 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
     private View.OnClickListener onClickListener(){
         return new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 switch (v.getId()){
                     case R.id.fab:
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.AlertDialogCustom).setTitle(R.string.create_account_title);
+                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogCustom).setTitle(R.string.create_account_title);
                         final View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.create_account_form, (ViewGroup) getView(), false);
                         builder.setView(viewInflated);
 
@@ -238,14 +243,28 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
                                 .setPositiveButton(R.string.create, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        // checking if inputs are empty before calling the repo to store the account
+                                        // checking if inputs are empty before calling the repo to store the account.
                                         if(!inputAccountName.getText().toString().equals("") &&
                                                 !textViewAccountType.getText().toString().equals("")){
-                                            ((MainActivity)getActivity()).getFireStoreRepo().saveAccount(
-                                                    user.getId(),
-                                                    inputAccountName.getText().toString(),
-                                                    textViewAccountType.getText().toString().toLowerCase(),
-                                                    0);
+
+                                            // making sure the account name isn't already in use.
+                                            boolean accountNameTaken = false;
+                                            for (Account account: user.getAccounts()) {
+                                                if(inputAccountName.getText().toString().toLowerCase().equals(inputAccountName.getText().toString().toLowerCase())){
+                                                    accountNameTaken = true;
+                                                }
+                                            }
+                                            if(!accountNameTaken){
+                                                FireStoreRepo fireStoreRepo = new FireStoreRepo();
+                                                fireStoreRepo.saveAccount(
+                                                        user.getId(),
+                                                        inputAccountName.getText().toString(),
+                                                        textViewAccountType.getText().toString().toLowerCase(),
+                                                        BigDecimal.valueOf(0));
+                                            } else {
+                                                Snackbar.make(v, R.string.snackbar_account_name_in_use, Snackbar.LENGTH_LONG).show();
+                                            }
+
                                         }
 
                                     }

@@ -56,6 +56,10 @@ public class Account implements Parcelable {
         return name;
     }
 
+    public String getType() {
+        return type;
+    }
+
     public BigDecimal getBalance() {
         return balance;
     }

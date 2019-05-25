@@ -12,15 +12,37 @@
         android:layout_width="match_parent"
         android:layout_height="40dp">
 
-        <TextView
-            android:layout_marginTop="5dp"
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:textSize="20sp"
-            android:layout_gravity="center"
-            android:textColor="@color/colorBackground"
-            />
+            android:orientation="horizontal"
+            android:weightSum="10">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:textSize="20sp"
+                android:layout_gravity="center"
+                android:textAlignment="center"
+                android:textColor="@color/colorBackground"
+                android:layout_weight="8"
+                />
+            <ImageView
+                android:id="@+id/icon_settings"
+                android:src="@drawable/ic_action_settings"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:clickable="true"/>
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 

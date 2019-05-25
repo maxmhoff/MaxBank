@@ -21,6 +21,12 @@ public class Transaction implements Parcelable {
         this.text = text;
         this.accountId = accountId;
     }
+    public Transaction(BigDecimal amount, Date entryDate, String text, String accountId){
+        this.amount = amount;
+        this.entryDate = entryDate;
+        this.text = text;
+        this.accountId = accountId;
+    }
 
     protected Transaction(Parcel in) {
         id = in.readString();
