@@ -9,8 +9,7 @@ which should be reflected in the color choices and most of the layout.
 ## Usage
 You can clone the repo right here from GitHub. You should be able to import the project straight into Android Studio.
 Once you get the app up and running on the android phone or emulator of your choice (not really though...advice: Use a new device!), you can safely create a new user. For testing purposes you will be provided with a private account that has 10.000 dkk in it.
-As long as you can read danish, the GUI should be relatively intuitive. If you want to test money transfers that are not between your own accounts.
-You can use: ZQNJCe5nPYdCXTs7A79G as the account number. _This way you'll help me build up a nice and healthy pension account!_
+As long as you can read danish, the GUI should be relatively intuitive. If you want to test money transfers between accounts that are not your own, you can use: ZQNJCe5nPYdCXTs7A79G as the account number. _This way you'll help me build up a nice and healthy pension account!_
 
 ## Disclaimers
 First and foremost: This application will have **many** features which would not be implemented in a real bank app. Fx.
@@ -21,7 +20,7 @@ To avoid complexity I'm *not* using the balance of the accounts in FireStore (th
 Instead I'm calculating the balance via transactions. This way the balance is automatically updated, whenever i make a transaction.
 This would be a critical mistake, if you were to make an actual bank app.
 
-I have not in any way been paying attention to the Required API. So you probably want to use 
+I have not in any way been paying attention to the Required API. So you probably want to use the newest device/emulator. Oops.
 
 Part of the requirements was to assign users to the closest branch of the bank. The bank is supposed to have two branches. 
 One at Vesterbro (Copenhagen) and another one in Odense. I could have used GPS tracking for this (which undoubtedly would lead to some weird situations) 
@@ -43,11 +42,11 @@ A list of things I would like to add in the future:
 	* Adding a higher level of abstraction to the FireStoreRepo.
 	* Implementing an Observer pattern that triggers the updateView() functions of the activities & fragments. _To avoid those pesky NullPointerExceptions!_
 
-3. A few dialogboxes could use some optimizing. 
+3. Some of dialog boxes could use some optimizing: Input validation and improved visuals etc. 
 
 4. A custom login page. Right now I'm using the default one provided by the Firebase UI.
 
-5. Add a better looking settings PopupMenu. ListPopupMenu could be a friend in need... but I have got to look into that!
+5. Add a better looking "settings PopupMenu". ListPopupMenu could be a friend in need... but I have got to look into that!
 
 6. Create a super interesting and cool icon for the app.
 
