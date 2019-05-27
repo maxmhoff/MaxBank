@@ -110,7 +110,7 @@ public class FireStoreRepo {
                         mainActivity.getUser().setAccounts(accounts);
                         if(initialLoad){
                             initialLoad = false;
-                            mainActivity.initViews();
+                            mainActivity.openFragment(mainActivity.fragmentId);
                         }
                     }
                 });

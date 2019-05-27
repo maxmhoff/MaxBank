@@ -2,7 +2,6 @@ package com.example.maxbank;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.util.Log;
@@ -51,8 +50,7 @@ public class MainActivity extends AppCompatActivity implements
     private AccountBalanceFragment accountBalanceFragment = new AccountBalanceFragment();
     private PaymentFragment paymentFragment = new PaymentFragment();
 
-
-    private TextView title;
+    private TextView textViewTitle;
     private ImageView iconSettings;
     private BottomNavigationView bottomNavbar;
 
@@ -63,11 +61,17 @@ public class MainActivity extends AppCompatActivity implements
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         fragmentId = R.id.account_balance;
-        try {
-            fragmentId = savedInstanceState.getInt(FRAGMENT_STATE);
-        } catch (NullPointerException nPEX){
-            Log.d(TAG, " could not retrieve fragmentId from savedInstanceState.");
+
+        if(savedInstanceState != null) {
+            try {
+                fragmentId = savedInstanceState.getInt(FRAGMENT_STATE);
+                openFragment(fragmentId);
+
+            } catch (NullPointerException nPEX) {
+                Log.d(TAG, " could not retrieve fragmentId from savedInstanceState.");
+            }
         }
+        initViews();
     }
 
     @Override
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onStart();
         fireStoreRepo = new FireStoreRepo(currentUser.getUid(), this);
         fireStoreRepo.getUser();
+
     }
 
     @Override
@@ -83,13 +88,12 @@ public class MainActivity extends AppCompatActivity implements
         outState.putInt(FRAGMENT_STATE, fragmentId);
     }
 
-    public void initViews(){
-        title = findViewById(R.id.title);
+    private void initViews(){
+        textViewTitle = findViewById(R.id.title);
         iconSettings = findViewById(R.id.icon_settings);
         iconSettings.setOnClickListener(onClickListener());
         bottomNavbar = findViewById(R.id.bottom_navigation);
         bottomNavbar.setOnNavigationItemSelectedListener(navbarListener());
-        openFragment(fragmentId);
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener navbarListener(){
@@ -112,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         };
     }
+
     private void showPopup(View v){
         Context wrapper = new ContextThemeWrapper(this, R.style.PopupCustom);
         PopupMenu popup = new PopupMenu(wrapper, v);
@@ -119,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements
         popup.inflate(R.menu.settings);
         popup.show();
     }
-
 
     private PopupMenu.OnMenuItemClickListener onMenuItemClickListener(){
         return new PopupMenu.OnMenuItemClickListener() {
@@ -147,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements
         };
     }
 
-    private void openFragment(int id){
+    public void openFragment(int id){
         clearBackStack();
         fragmentId = id;
         FragmentTransaction transaction = fm.beginTransaction();
@@ -158,18 +162,15 @@ public class MainActivity extends AppCompatActivity implements
                 accountBalanceFragment.setArguments(bundle);
                 transaction.replace(R.id.fragment_container, accountBalanceFragment);
                 transaction.commit();
-                title.setText(getString(R.string.overview_title));
                 break;
             case R.id.pay:
                 paymentFragment.setArguments(bundle);
                 transaction.replace(R.id.fragment_container, paymentFragment);
                 transaction.commit();
-                title.setText(getString(R.string.pay_title));
                 break;
             case R.id.transaction:
                 transaction.replace(R.id.fragment_container, TransactionFragment.newInstance(user));
                 transaction.commit();
-                title.setText(getString(R.string.transaction_title));
                 break;
         }
     }
@@ -189,8 +190,8 @@ public class MainActivity extends AppCompatActivity implements
 
     // I am going to use this once I start setting up my fragments correctly.
     @Override
-    public void onFragmentInteraction(Uri uri) {
-
+    public void onFragmentInteraction(String title) {
+        textViewTitle.setText(title);
     }
 
     public User getUser() {

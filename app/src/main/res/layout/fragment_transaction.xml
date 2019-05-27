@@ -9,27 +9,43 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fadeScrollbars="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginHorizontal="20dp"
             android:orientation="vertical">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="20dp"
                 android:layout_marginBottom="5dp"
                 android:text="@string/transaction_info"
                 android:textAlignment="center"
                 android:textSize="16sp" />
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/toggle_fixed_transfer"
+                    android:buttonTint="@color/colorAccent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fixed_transfer"
+                    android:textColor="@color/colorTextDark"
+                    />
+
+            </RelativeLayout>
+
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="10dp"
                 android:textColorHint="@color/colorAccent"
                 app:boxStrokeColor="@color/colorAccent"
@@ -50,7 +66,6 @@
             <com.google.android.material.textfield.TextInputLayout
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -65,14 +80,14 @@
                     android:id="@+id/input_from_account"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:editable="false" />
+                    android:editable="false"
+                    android:soundEffectsEnabled="false"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -87,14 +102,37 @@
                     android:id="@+id/input_to_account"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:editable="false" />
+                    android:editable="false"
+                    android:soundEffectsEnabled="false"/>
             </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:id="@+id/layout_fixed_transfer"
+                android:layout_marginBottom="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/input_fixed_transfer"
+                android:textColorHint="@color/colorAccent"
+                app:boxStrokeColor="@color/colorAccent"
+                app:hintTextColor="@color/colorAccent"
+                app:endIconTint="@color/colorTextDark"
+                android:visibility="gone"
+                >
+
+                <AutoCompleteTextView
+                    android:id="@+id/input_fixed_transfer_options"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:editable="false"
+                    android:soundEffectsEnabled="false"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_confirm"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height_default"
-                android:layout_marginHorizontal="20dp"
                 android:text="@string/confirm"
                 android:backgroundTint="@color/colorAccent"/>
         </LinearLayout>

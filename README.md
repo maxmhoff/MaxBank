@@ -6,6 +6,12 @@ For this project I am using FireStore as the database. FireStore might not be th
 but I'm eager to learn and become comfortable with it. In regards to the GUI design I have been trying my best to follow the principles outlined by Material, 
 which should be reflected in the color choices and most of the layout.
 
+## Usage
+You can clone the repo right here from GitHub. You should be able to import the project straight into Android Studio.
+Once you get the app up and running on the android phone or emulator of your choice (not really though...advice: Use a new device!), you can safely create a new user. For testing purposes you will be provided with a private account that has 10.000 dkk in it.
+As long as you can read danish, the GUI should be relatively intuitive. If you want to test money transfers that are not between your own accounts.
+You can use: ZQNJCe5nPYdCXTs7A79G as the account number. _This way you'll help me build up a nice and healthy pension account!_
+
 ## Disclaimers
 First and foremost: This application will have **many** features which would not be implemented in a real bank app. Fx.
 the current way of creating an account could be misused. There is no limit to how many accounts you can make in one session.
@@ -15,6 +21,8 @@ To avoid complexity I'm *not* using the balance of the accounts in FireStore (th
 Instead I'm calculating the balance via transactions. This way the balance is automatically updated, whenever i make a transaction.
 This would be a critical mistake, if you were to make an actual bank app.
 
+I have not in any way been paying attention to the Required API. So you probably want to use 
+
 Part of the requirements was to assign users to the closest branch of the bank. The bank is supposed to have two branches. 
 One at Vesterbro (Copenhagen) and another one in Odense. I could have used GPS tracking for this (which undoubtedly would lead to some weird situations) 
 or added an address to the users, made some rough calculations and called it a day.
@@ -23,26 +31,25 @@ They might have bonds to that particular branch, bonds that do not rely on the s
 And the final thing to consider is that in a real world scenario the user would probably be created through a branch and thus this feature would be redundant anyway.
 As of now the user can assign him-/herself to a branch via the edit user activity.
 
+Another requirement was to add fixed transfers. I've added the views for it, but it has to be handled server-side, and therefore it is not properly implemented yet.
+
 ## TO-DO
 A list of things I would like to add in the future:
 
 1. Add pay functionality
 
-2. Add transaction functionality
-    * Move money from one account to another and create a transaction in both accounts to reflect the change.
-
-3. Implement a better architecture - this could include:
-    * Using methods provided by the default fragment template fom Android Studio.
+2. Implement a better architecture - this could include:
+    * Using methods provided by the default fragment template fom Android Studio on all fragments.
 	* Adding a higher level of abstraction to the FireStoreRepo.
 	* Implementing an Observer pattern that triggers the updateView() functions of the activities & fragments. _To avoid those pesky NullPointerExceptions!_
 
-4. More visual feedback on the dialogbox forms: Disabled create button, untill fields are properly filled etc.
+3. A few dialogboxes could use some optimizing. 
 
-5. A custom login page. Right now I'm using the default one provided by the Firebase UI.
+4. A custom login page. Right now I'm using the default one provided by the Firebase UI.
 
-6. Add a better looking settings PopupMenu. ListPopupMenu could be a friend in need... but I have got to look into that!
+5. Add a better looking settings PopupMenu. ListPopupMenu could be a friend in need... but I have got to look into that!
 
-7. Create a super interesting and cool icon for the app.
+6. Create a super interesting and cool icon for the app.
 
 ## Known bugs
 A list of bugs that I am aware of, but have not been able to fix yet:
@@ -51,4 +58,9 @@ _This might be due to the decorator, but I am uncertain._
 
 * The Create Account DialogBox associated to the Floating Action Button can be opened multiple times. _I should probably introduce a boolean._
 
-* The Create User DialogBox can only be used in portrait mode, since the form is too big for landscape.
+* Once in a while the account_balance view fails to get refreshed when a new account is added.
+I suspect this has something to do with the callback from the firestore, but I'm not quite sure.
+
+* The Create Account DialogBox does not survive state changes. The solution is to change it into a dialog fragment.
+
+* If orientation changes while Exposed Dropdown is active the arrayadapter loses all other entries than the one currently selected.

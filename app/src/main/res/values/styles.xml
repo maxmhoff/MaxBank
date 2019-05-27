@@ -11,6 +11,12 @@
         <item name="colorOnSecondary">@color/colorBackground</item>
         <item name="colorControlActivated">@color/colorBackground</item>
         <item name="colorControlHighlight">@color/colorBackground</item>
+        <item name="colorError">@color/colorPrimary</item>
+        <item name="colorOnError">@color/colorPrimary</item>
+    </style>
+    <style name="AppTheme.Launcher">
+        <item name="android:windowBackground">@drawable/launch_screen</item>
+        <item name="colorPrimaryDark">@color/colorLauncher</item>
     </style>
 
     <style name="AlertDialogCustom" parent="@style/Theme.MaterialComponents.Light.Dialog">
@@ -18,6 +24,8 @@
         <item name="colorControlActivated">@color/colorAccent</item>
         <item name="colorPrimary">@color/colorAccent</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorError">@color/colorPrimary</item>
+        <item name="colorOnError">@color/colorPrimary</item>
     </style>
 
     <style name="PopupCustom" parent="Widget.AppCompat.PopupMenu.Overflow">

@@ -57,6 +57,10 @@ public class User implements Parcelable {
         return branch;
     }
 
+    public void setBranch(String branch) {
+        this.branch = branch;
+    }
+
     public boolean isSeniorCitizen(){
         // Since I'm using Date() I have to do it this clumsy way
         Calendar calDayOfBirth = Calendar.getInstance();

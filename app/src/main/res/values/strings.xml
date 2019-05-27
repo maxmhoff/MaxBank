@@ -20,7 +20,7 @@
     <string name="info_text_loggedin">Du er i øjeblikket logget ind via</string>
     <string name="create_account_title">Vil du oprette en ny konto?</string>
     <string name="create_account_description">Indtast et navn, vælg en kontotype og tryk opret.</string>
-    <string name="login_failed">Login mislykkedes</string>
+    <string name="login_failed">Login mislykkedes.</string>
     <string name="input_name">Navn</string>
     <string name="input_day_of_birth">Fødselsdato</string>
     <string name="input_email">Email</string>
@@ -28,7 +28,7 @@
     <string name="edit_user">Rediger bruger</string>
     <string name="sign_out">Log af</string>
     <string name="reset_password">NULSTIL ADGANGSKODE</string>
-    <string name="change_email_title">Vil du ændre din emailadresse?</string>
+    <string name="change_email_title">Vil du ændre din email?</string>
     <string name="change_email_description">Indtast dit kodeord og tryk fortsæt.</string>
     <string name="change_email_continue">FORTSÆT</string>
     <string name="input_amount">Beløb</string>
@@ -40,14 +40,24 @@
     <string name="verify">Bekræft</string>
     <string name="nem_id_description">Indtast NemID og tryk bekræft.</string>
     <string name="verify_transaction_title">Ønsker du at overføre?</string>
+    <string name="fixed_transfer">Fast overførsel</string>
 
     <string name="save_changes">Gem ændringer</string>
     <string name="info_edit_user">Tryk på switchen for at slå redigering til:</string>
+    <string name="helper_text_password">Mindst seks tegn.</string>
+
+    <string name="error_name_character">Dit navn indeholder uønskede tegn</string>
+    <string name="error_full_name_missing">Du skal indtaste dit fulde navn</string>
+    <string name="error_too_young">Du skal mindst være 16 år gammel for at oprette en konto.</string>
+    <string name="error_too_old">Du har indtastet en forkert fødselsdato.</string>
+    <string name="error_invalid_email_address">Du skal indtaste en gyldig e-mailadresse</string>
+    <string name="error_password_too_short">Din adgangskode skal mindst bestå af seks tegn.</string>
 
     <string name="snackbar_password_reset_email">"Der vil snart blive sendt en e-mail til dig, hvor du kan indtaste en ny adgangskode."</string>
     <string name="snackbar_no_changes">Du foretog ingen ændringer.</string>
     <string name="snackbar_changes_saved">Dine ændringer er gemt.</string>
     <string name="snackbar_account_name_in_use">Kontoen blev ikke oprettet, da det indtastede navn allerede er i brug.</string>
+    <string name="snackbar_business_account_without_branch">Du kan ikke oprette en erhvervskonto uden en tilknyttet filial.</string>
     <string name="snackbar_not_senior_citizen">Du kan ikke overføre fra en pensionskonto medmindre du er 77+ år.</string>
     <string name="snackbar_insufficient_funds">Beløbet, du ønsker at overføre, overskrider din kontobalance.</string>
     <string name="snackbar_nem_id_error">Dit NemId kunne ikke verificeres.</string>
@@ -57,6 +67,14 @@
         <item name="branch_none">Ingen</item>
         <item name="branch_vesterbro">Vesterbro</item>
         <item name="branch_odense">Odense</item>
+    </string-array>
+
+    <string name="input_fixed_transfer">Betalingsdag</string>
+    <string-array name="fixed_transfer_options">
+        <item name="beginning_of_month">Den første dag i måneden.</item>
+        <item name="mid_of_month">Den 15. i måneden.</item>
+        <item name="last_every_day">Den sidste hverdag i måneden.</item>
+        <item name="last_day">Den sidste dag i måneden.</item>
     </string-array>
 
     <string name="input_account_name">Kontonavn</string>

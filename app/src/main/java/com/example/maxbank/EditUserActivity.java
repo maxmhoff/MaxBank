@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -145,11 +144,12 @@ public class EditUserActivity extends AppCompatActivity {
     }
 
     private void changeEmailForm(View v){
-        View viewInflated = LayoutInflater.from(this).inflate(R.layout.change_email_form, (ViewGroup) v.getRootView(), false);
+        View viewInflated = LayoutInflater.from(this).inflate(R.layout.form_change_email, (ViewGroup) v.getRootView(), false);
         final TextInputEditText inputPassword = viewInflated.findViewById(R.id.input_password);
-        new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this, R.style.AlertDialogCustom)
                 .setTitle(R.string.change_email_title)
                 .setMessage(R.string.change_email_description)
+                .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.change_email_continue, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

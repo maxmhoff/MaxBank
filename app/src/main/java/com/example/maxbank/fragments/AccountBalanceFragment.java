@@ -1,6 +1,5 @@
 package com.example.maxbank.fragments;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -26,6 +25,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 
+import com.example.maxbank.MainActivity;
 import com.example.maxbank.R;
 import com.example.maxbank.adapters.AccountAdapter;
 import com.example.maxbank.objects.Account;
@@ -105,15 +105,11 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account_balance, container, false);
         mView = view;
+        if (mListener != null) {
+            mListener.onFragmentInteraction(getResources().getString(R.string.overview_title));
+        }
         initViews();
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -146,8 +142,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
      */
 
     public interface OnAccountBalanceInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onFragmentInteraction(String title);
     }
 
     private void initViews(){
@@ -215,7 +210,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
                 switch (v.getId()){
                     case R.id.fab:
                         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogCustom).setTitle(R.string.create_account_title);
-                        final View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.create_account_form, (ViewGroup) getView(), false);
+                        final View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.form_create_account, (ViewGroup) getView(), false);
                         builder.setView(viewInflated);
 
                         // populating the spinner
@@ -250,17 +245,23 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
                                             // making sure the account name isn't already in use.
                                             boolean accountNameTaken = false;
                                             for (Account account: user.getAccounts()) {
-                                                if(inputAccountName.getText().toString().toLowerCase().equals(inputAccountName.getText().toString().toLowerCase())){
+                                                if(inputAccountName.getText().toString().toLowerCase().equals(account.getName().toLowerCase())){
                                                     accountNameTaken = true;
                                                 }
                                             }
                                             if(!accountNameTaken){
-                                                FireStoreRepo fireStoreRepo = new FireStoreRepo();
-                                                fireStoreRepo.saveAccount(
-                                                        user.getId(),
-                                                        inputAccountName.getText().toString(),
-                                                        textViewAccountType.getText().toString().toLowerCase(),
-                                                        BigDecimal.valueOf(0));
+                                                //making sure a user has a branch assigned if the user is trying to make a business account.
+                                                String type = typeConversion(textViewAccountType.getText().toString());
+                                                if(type.equals("business") && ((MainActivity) getActivity()).getUser().getBranch().equals("Ingen")){
+                                                    Snackbar.make(v, R.string.snackbar_business_account_without_branch, Snackbar.LENGTH_LONG).show();
+                                                } else {
+                                                    FireStoreRepo fireStoreRepo = new FireStoreRepo();
+                                                    fireStoreRepo.saveAccount(
+                                                            user.getId(),
+                                                            inputAccountName.getText().toString(),
+                                                            type,
+                                                            BigDecimal.valueOf(0));
+                                                }
                                             } else {
                                                 Snackbar.make(v, R.string.snackbar_account_name_in_use, Snackbar.LENGTH_LONG).show();
                                             }
@@ -274,5 +275,20 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
                 }
             }
         };
+    }
+    private String typeConversion(String type){
+        switch (type.toLowerCase()){
+            case "privat":
+                return "default";
+            case "budget":
+                return "budget";
+            case "pension":
+                return "pension";
+            case "opsparing":
+                return "savings";
+            case "erhverv":
+                return "business";
+        }
+        return null;
     }
 }

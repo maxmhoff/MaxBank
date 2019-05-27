@@ -1,6 +1,7 @@
 package com.example.maxbank.fragments;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,9 +42,12 @@ public class AccountFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private Account account;
-
     private static final String TAG = "AccountFragment";
+
+    private MediaPlayer sfxOpen;
+    private MediaPlayer sfxClose;
+
+    private Account account;
 
     private View mView;
     private TextView headline;
@@ -84,9 +88,12 @@ public class AccountFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
         account = getArguments().getParcelable(getString(R.string.ACCOUNT_KEY));
 
+        // loading sounds
+        sfxOpen = MediaPlayer.create(getContext(), R.raw.open_account);
+        sfxClose = MediaPlayer.create(getContext(), R.raw.close_account);
+        sfxOpen.start();
     }
 
     @Override
@@ -97,13 +104,6 @@ public class AccountFragment extends Fragment {
         mView = view;
         initViews();
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -124,6 +124,12 @@ public class AccountFragment extends Fragment {
         mView = null;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        sfxClose.start();
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -136,7 +142,7 @@ public class AccountFragment extends Fragment {
      */
     public interface OnAccountInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onFragmentInteraction(String title);
     }
 
     private void initViews(){

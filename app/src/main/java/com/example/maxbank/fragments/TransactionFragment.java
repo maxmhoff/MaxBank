@@ -13,10 +13,14 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 import com.example.maxbank.R;
+import com.example.maxbank.fragments.dialogs.NemIdDialogFragment;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.Transaction;
 import com.example.maxbank.objects.User;
@@ -24,6 +28,7 @@ import com.example.maxbank.repositories.FireStoreRepo;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -40,15 +45,18 @@ import java.util.Date;
  */
 public class TransactionFragment extends Fragment {
     private static final String USER_KEY = "USER_KEY";
-    public static final int NEM_ID_VERIFICATION = 1;
+    private static final int NEM_ID_VERIFICATION = 1;
 
     private User user;
     private Transaction[] storedTransactions = new Transaction[2];
 
     private View mView;
     private TextInputEditText inputAmount;
+    private CheckBox toggleFixedTransfer;
     private AutoCompleteTextView inputFromAccount;
     private AutoCompleteTextView inputToAccount;
+    private TextInputLayout layoutFixedTransfer;
+    private AutoCompleteTextView inputFixedTransfer;
     private MaterialButton btnConfirm;
 
     private boolean nemIDVerificationNeeded;
@@ -79,16 +87,12 @@ public class TransactionFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.fragment_transaction, container, false);
+        if (mListener != null) {
+            mListener.onFragmentInteraction(getResources().getString(R.string.transaction_title));
+        }
         initViews();
         // Inflate the layout for this fragment
         return mView;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -120,12 +124,21 @@ public class TransactionFragment extends Fragment {
      */
     public interface OnTransactionInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onFragmentInteraction(String title);
     }
 
     private void initViews(){
         if(mView != null){
+            toggleFixedTransfer = mView.findViewById(R.id.toggle_fixed_transfer);
+
             inputAmount = mView.findViewById(R.id.input_amount);
+            inputAmount.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(inputAmount.getWindowToken(), 0);
+                }
+            });
 
             inputFromAccount = mView.findViewById(R.id.input_from_account);
             inputToAccount = mView.findViewById(R.id.input_to_account);
@@ -137,9 +150,27 @@ public class TransactionFragment extends Fragment {
             inputFromAccount.setAdapter(adapter);
             inputToAccount.setAdapter(adapter);
 
+            layoutFixedTransfer = mView.findViewById(R.id.layout_fixed_transfer);
+            inputFixedTransfer = mView.findViewById(R.id.input_fixed_transfer_options);
+            ArrayAdapter<String> fixedTransferAdapter = new ArrayAdapter<>(getContext(), R.layout.dropdown_menu_popup_item,
+                    getResources().getStringArray(R.array.fixed_transfer_options));
+            inputFixedTransfer.setAdapter(fixedTransferAdapter);
+
             btnConfirm = mView.findViewById(R.id.button_confirm);
             btnConfirm.setOnClickListener(onClickListener());
 
+            toggleFixedTransfer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked){
+                        layoutFixedTransfer.setVisibility(View.VISIBLE);
+                        toggleFixedTransfer.setTextColor(getResources().getColor(R.color.colorTextLight));
+                    } else {
+                        layoutFixedTransfer.setVisibility(View.GONE);
+                        toggleFixedTransfer.setTextColor(getResources().getColor(R.color.colorTextDark));
+                    }
+                }
+            });
         }
     }
 
@@ -169,7 +200,6 @@ public class TransactionFragment extends Fragment {
                 Transaction received = new Transaction(amount, new Date(), textToAccount, toAccount.getId());
 
                 if(nemIDVerificationNeeded == false){
-                    FireStoreRepo fireStoreRepo = new FireStoreRepo();
                     submitTransactions(send, received);
                 } else {
                     storedTransactions[0] = send;
@@ -203,7 +233,7 @@ public class TransactionFragment extends Fragment {
             }
         }
         // nemId
-        if(toAccount.getType().equals("pension")){
+        if(fromAccount.getType().equals("savings")  || toAccount.getType().equals("pension")){
             nemIDVerificationNeeded = true;
             showNemIDDialog();
         }
