@@ -85,10 +85,8 @@ public class AccountFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            account = getArguments().getParcelable(getString(R.string.ACCOUNT_KEY));
         }
-        account = getArguments().getParcelable(getString(R.string.ACCOUNT_KEY));
 
         // loading sounds
         sfxOpen = MediaPlayer.create(getContext(), R.raw.open_account);
@@ -122,6 +120,8 @@ public class AccountFragment extends Fragment {
         super.onDetach();
         mListener = null;
         mView = null;
+        sfxOpen.release();
+        sfxClose.release();
     }
 
     @Override

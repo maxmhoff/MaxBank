@@ -3,12 +3,11 @@ package com.example.maxbank.repositories;
 import android.util.Log;
 
 import com.example.maxbank.MainActivity;
-import com.example.maxbank.R;
 import com.example.maxbank.fragments.AccountBalanceFragment;
+import com.example.maxbank.interfaces.GetAccountListener;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.Transaction;
 import com.example.maxbank.objects.User;
-import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -39,7 +38,6 @@ public class FireStoreRepo {
     private static final String TAG = "FireStoreRepo";
 
     private String userId;
-    private User user;
 
     private MainActivity mainActivity;
 
@@ -163,7 +161,28 @@ public class FireStoreRepo {
 
     }
 
-    // level of abstractions is "okay" on every function below this line:
+    // level of abstractions is decent on every function below this line:
+    public void getAccount(final GetAccountListener accountListener, String id){
+        final String accountId = id;
+        db.collection("accounts").document(id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    DocumentSnapshot doc = task.getResult();
+                    try{
+                        String name = doc.getString("name");
+                        String type = doc.getString("type");
+                        BigDecimal balance = BigDecimal.valueOf(doc.getDouble("balance"));
+                        accountListener.onSuccess(new Account(accountId, name, type, balance));
+                    } catch (NullPointerException nPEX){
+                        accountListener.onError();
+                    }
+                } else {
+                    accountListener.onError();
+                }
+            }
+        });
+    }
 
     // Could probably fetch the userId straight from firebase auth within this class.
     public void saveUser(String userId, String name, Date dayOfBirth, String branch){

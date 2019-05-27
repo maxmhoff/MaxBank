@@ -164,8 +164,7 @@ public class MainActivity extends AppCompatActivity implements
                 transaction.commit();
                 break;
             case R.id.pay:
-                paymentFragment.setArguments(bundle);
-                transaction.replace(R.id.fragment_container, paymentFragment);
+                transaction.replace(R.id.fragment_container, PaymentFragment.newInstance(user));
                 transaction.commit();
                 break;
             case R.id.transaction:

@@ -7,7 +7,6 @@ import androidx.fragment.app.FragmentTransaction;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -22,9 +21,8 @@ import android.widget.CompoundButton;
 import com.example.maxbank.R;
 import com.example.maxbank.fragments.dialogs.NemIdDialogFragment;
 import com.example.maxbank.objects.Account;
-import com.example.maxbank.objects.Transaction;
 import com.example.maxbank.objects.User;
-import com.example.maxbank.repositories.FireStoreRepo;
+import com.example.maxbank.utilities.TransactionHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -32,23 +30,13 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnTransactionInteractionListener} interface
- * to handle interaction events.
- * Use the {@link TransactionFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class TransactionFragment extends Fragment {
     private static final String USER_KEY = "USER_KEY";
     private static final int NEM_ID_VERIFICATION = 1;
 
     private User user;
-    private Transaction[] storedTransactions = new Transaction[2];
+    private TransactionHelper th;
 
     private View mView;
     private TextInputEditText inputAmount;
@@ -59,7 +47,6 @@ public class TransactionFragment extends Fragment {
     private AutoCompleteTextView inputFixedTransfer;
     private MaterialButton btnConfirm;
 
-    private boolean nemIDVerificationNeeded;
 
     private OnTransactionInteractionListener mListener;
 
@@ -91,7 +78,6 @@ public class TransactionFragment extends Fragment {
             mListener.onFragmentInteraction(getResources().getString(R.string.transaction_title));
         }
         initViews();
-        // Inflate the layout for this fragment
         return mView;
     }
 
@@ -112,18 +98,7 @@ public class TransactionFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnTransactionInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(String title);
     }
 
@@ -164,10 +139,10 @@ public class TransactionFragment extends Fragment {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if(isChecked){
                         layoutFixedTransfer.setVisibility(View.VISIBLE);
-                        toggleFixedTransfer.setTextColor(getResources().getColor(R.color.colorTextLight));
+                        toggleFixedTransfer.setTextColor(getContext().getColor(R.color.colorTextLight));
                     } else {
                         layoutFixedTransfer.setVisibility(View.GONE);
-                        toggleFixedTransfer.setTextColor(getResources().getColor(R.color.colorTextDark));
+                        toggleFixedTransfer.setTextColor(getContext().getColor(R.color.colorTextDark));
                     }
                 }
             });
@@ -191,19 +166,15 @@ public class TransactionFragment extends Fragment {
         Account toAccount = retrieveAccount(inputToAccount.getText().toString());
 
         BigDecimal amount = new BigDecimal(inputAmount.getText().toString());
-        String textFromAccount = getString(R.string.input_to_account) + " " + toAccount.getName();
-        String textToAccount = getString(R.string.input_from_account) + " " + fromAccount.getName();
+
 
         if(fromAccount != null && toAccount != null){
-            if(validateTransactions(fromAccount, toAccount, amount)){
-                Transaction send = new Transaction(new BigDecimal(0).subtract(amount), new Date(), textFromAccount, fromAccount.getId());
-                Transaction received = new Transaction(amount, new Date(), textToAccount, toAccount.getId());
-
-                if(nemIDVerificationNeeded == false){
-                    submitTransactions(send, received);
+            th = new TransactionHelper(getContext(), getView(), user, fromAccount, toAccount, amount);
+            if(th.validate()){
+                if(th.checkIfNemIdIsNeeded()){
+                    showNemIDDialog();
                 } else {
-                    storedTransactions[0] = send;
-                    storedTransactions[1] = received;
+                    th.submit();
                 }
             }
         }
@@ -216,36 +187,6 @@ public class TransactionFragment extends Fragment {
             }
         }
         return null;
-    }
-
-    private Boolean validateTransactions(Account fromAccount, Account toAccount, BigDecimal amount){
-        nemIDVerificationNeeded = false;
-        // sufficient funds
-        if(fromAccount.getBalance().compareTo(amount) < 0){
-            Snackbar.make(getView(), R.string.snackbar_insufficient_funds , Snackbar.LENGTH_LONG).show();
-            return false;
-        }
-        // sufficient age
-        if(fromAccount.getType().equals("pension")){
-            if(!user.isSeniorCitizen()){
-                Snackbar.make(getView(), R.string.snackbar_not_senior_citizen , Snackbar.LENGTH_LONG).show();
-                return false;
-            }
-        }
-        // nemId
-        if(fromAccount.getType().equals("savings")  || toAccount.getType().equals("pension")){
-            nemIDVerificationNeeded = true;
-            showNemIDDialog();
-        }
-        return true;
-    }
-
-    private void submitTransactions(Transaction send, Transaction received){
-        if(!nemIDVerificationNeeded){
-            FireStoreRepo fireStoreRepo = new FireStoreRepo();
-            fireStoreRepo.saveTransaction(send);
-            fireStoreRepo.saveTransaction(received);
-        }
     }
 
     private void showNemIDDialog(){
@@ -269,12 +210,11 @@ public class TransactionFragment extends Fragment {
             case NEM_ID_VERIFICATION:
 
                 if (resultCode == Activity.RESULT_OK) {
-                    nemIDVerificationNeeded = false;
-                    submitTransactions(storedTransactions[0], storedTransactions[1]);
+                    th.submit();
+                    toggleViewsEnabled(true);
 
                 } else if (resultCode == Activity.RESULT_CANCELED){
                     Snackbar.make(getView(), R.string.snackbar_nem_id_error, Snackbar.LENGTH_SHORT).show();
-                    nemIDVerificationNeeded = false;
                     toggleViewsEnabled(true);
                 }
 

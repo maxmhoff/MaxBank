@@ -35,27 +35,22 @@ Another requirement was to add fixed transfers. I've added the views for it, but
 ## TO-DO
 A list of things I would like to add in the future:
 
-1. Add pay functionality
+1. Add a higher level of abstraction to the FireStoreRepo by using listeners.
 
-2. Implement a better architecture - this could include:
-    * Using methods provided by the default fragment template fom Android Studio on all fragments.
-	* Adding a higher level of abstraction to the FireStoreRepo.
-	* Implementing an Observer pattern that triggers the updateView() functions of the activities & fragments. _To avoid those pesky NullPointerExceptions!_
+2. Some of dialog boxes could use some optimizing: Input validation and improved visuals etc. 
 
-3. Some of dialog boxes could use some optimizing: Input validation and improved visuals etc. 
+3. A custom login page. Right now I'm using the default one provided by the Firebase UI.
 
-4. A custom login page. Right now I'm using the default one provided by the Firebase UI.
+4. Add a better looking "settings PopupMenu". ListPopupMenu could be a friend in need... but I have got to look into that!
 
-5. Add a better looking "settings PopupMenu". ListPopupMenu could be a friend in need... but I have got to look into that!
-
-6. Create a super interesting and cool icon for the app.
+5. Create a super interesting and cool icon for the app.
 
 ## Known bugs
 A list of bugs that I am aware of, but have not been able to fix yet:
 * If a transaction is added or modified while viewing the corresponding account (AccountFragment) the size of the item_layout stretches vertically. 
 _This might be due to the decorator, but I am uncertain._
 
-* The Create Account DialogBox associated to the Floating Action Button can be opened multiple times. _I should probably introduce a boolean._
+* The Create Account DialogBox associated to the Floating Action Button can be opened multiple times. _I should probably introduce a boolean or make it into a Dialog Fragment!_
 
 * Once in a while the account_balance view fails to get refreshed when a new account is added.
 I suspect this has something to do with the callback from the firestore, but I'm not quite sure.
