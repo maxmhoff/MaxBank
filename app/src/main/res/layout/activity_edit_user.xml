@@ -104,9 +104,9 @@
                         android:id="@+id/user-branch"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:editable="false"
                         android:enabled="false"
-                        android:soundEffectsEnabled="false"/>
+                        android:soundEffectsEnabled="false"
+                        android:editable="false"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton

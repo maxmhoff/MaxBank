@@ -2,12 +2,11 @@ package com.example.maxbank.repositories;
 
 import android.util.Log;
 
-import com.example.maxbank.MainActivity;
-import com.example.maxbank.fragments.AccountBalanceFragment;
 import com.example.maxbank.interfaces.GetAccountListener;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.Transaction;
 import com.example.maxbank.objects.User;
+import com.example.maxbank.viewmodels.UserViewModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,155 +36,126 @@ public class FireStoreRepo {
 
     private static final String TAG = "FireStoreRepo";
 
-    private String userId;
-
-    private MainActivity mainActivity;
-
-    private AccountBalanceFragment accountBalanceFragment;
-
-    // to ensure openFragment() only gets called on first fetch
-    private Boolean initialLoad = true;
-
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public FireStoreRepo(String userId, MainActivity mainActivity){
-        this.userId = userId;
-        this.mainActivity = mainActivity;
-        this.accountBalanceFragment = mainActivity.getAccountBalanceFragment();
+    public FireStoreRepo() {
         adjustTimeZone();
     }
 
-    public FireStoreRepo(){
-
-    }
-
-    public void getUser(){
+    public void getUser(final String userId, final UserViewModel userViewModel) {
         final DocumentReference docRef = db.document("users/" + userId);
-        docRef.addSnapshotListener(mainActivity, new EventListener<DocumentSnapshot>() {
+        docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot docSnap, @Nullable FirebaseFirestoreException e) {
-                if(docSnap.exists()) {
-                    String name = docSnap.getString("name");
-                    Date dayOfBirth = docSnap.getTimestamp("day_of_birth").toDate();
-                    String branch = docSnap.getString("branch");
-                    mainActivity.setUser(new User(userId, name, dayOfBirth, branch));
-                    fetchAccounts();
-                } else if (e != null){
-                    Log.w(TAG, "Got an exception while trying to retrieve user data: \n" + docSnap);
+                if (docSnap.exists()) {
+                    try {
+                        String name = docSnap.getString("name");
+                        Date dayOfBirth = docSnap.getTimestamp("day_of_birth").toDate();
+                        String branch = docSnap.getString("branch");
+                        userViewModel.getUser().setValue(new User(userId, name, dayOfBirth, branch));
+                    } catch (NullPointerException nPEX) {
+                        Log.d(TAG, "Unable to retrieve user: " + userId);
+                    }
+                } else if (e != null) {
+                    Log.d(TAG, "Unable to retrieve user: " + userId);
                 }
+                getAccounts(userId, userViewModel);
             }
         });
     }
 
-    private void fetchAccounts(){
+    private void getAccounts(final String userId, final UserViewModel userViewModel) {
         db.collection("accounts")
                 .whereEqualTo("user_id", userId)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
+                    public void onEvent(@Nullable QuerySnapshot querySnapshot,
                                         @Nullable FirebaseFirestoreException e) {
-                        if(e != null){
+                        if (e != null) {
                             Log.w(TAG, "Got an exception while trying to retrieve account data.");
                             return;
                         }
                         List<Account> accounts = new ArrayList<>();
-                        for (QueryDocumentSnapshot doc : value){
-                            if(doc.exists()){
-                                try {
-                                    String id = doc.getId();
-                                    String name = doc.getString("name");
-                                    String type = doc.getString("type");
-                                    BigDecimal balance = BigDecimal.valueOf(doc.getDouble("balance"));
-                                    Account account = new Account(id, name, type, balance);
-                                    accounts.add(account);
-                                    fetchTransactions(account);
-                                } catch (NullPointerException nPEX){
-                                    Log.w(TAG, "Got an exception while trying to retrieve account data: \n" + doc + "\n" + nPEX.toString());
-                                    return;
-                                }
+                        for (QueryDocumentSnapshot doc : querySnapshot) {
+                            if (doc.exists()) {
+                                String id = doc.getId();
+                                String name = doc.getString("name");
+                                String type = doc.getString("type");
+                                BigDecimal balance = BigDecimal.valueOf(doc.getDouble("balance"));
+                                accounts.add(new Account(id, name, type, balance));
+
+                            } else {
+                                Log.d(TAG, "Unable to retrieve accounts for user: " + userId);
                             }
                         }
-                        mainActivity.getUser().setAccounts(accounts);
-                        if(initialLoad){
-                            initialLoad = false;
-                            mainActivity.openFragment(mainActivity.fragmentId);
+                        userViewModel.getUser().getValue().setAccounts(accounts);
+                        for (Account account: accounts) {
+                            getTransactions(account, userViewModel);
                         }
                     }
                 });
     }
 
-    private void fetchTransactions(Account account){
+    private void getTransactions(final Account account, final UserViewModel userViewModel) {
         db.collection("transactions")
                 .whereEqualTo("account_id", account.getId())
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
+                    public void onEvent(@Nullable QuerySnapshot querySnapshot,
                                         @Nullable FirebaseFirestoreException e) {
-                        if(e != null){
+                        if (e != null) {
                             Log.w(TAG, "Got a FirebaseFireStoreException while trying to retrieve transaction data");
                             return;
                         }
-                        for (QueryDocumentSnapshot doc : value){
-                            if(doc.exists()){
+                        List<Transaction> transactions = new ArrayList<>();
+                        for (QueryDocumentSnapshot doc : querySnapshot) {
+                            if (doc.exists()) {
                                 try {
                                     String id = doc.getId();
                                     BigDecimal amount = BigDecimal.valueOf(doc.getDouble("amount"));
                                     Date dayOfBirth = doc.getTimestamp("entry_date").toDate();
                                     String text = doc.getString("text");
                                     String accountId = doc.getString("account_id");
-                                    Transaction transaction = new Transaction(id, amount, dayOfBirth, text, accountId);
-                                    assignTransaction(transaction);
-                                } catch (NullPointerException nPEX){
-                                    Log.e(TAG, "Got a NullPointerException while trying to retrieve transaction data: \n" + doc + "\n" + nPEX.toString());
+                                    transactions.add(new Transaction(id, amount, dayOfBirth, text, accountId));
+                                } catch (NullPointerException nPEX) {
+                                    Log.d(TAG, "Unable to retrieve transactions for acount: " + account.getId());
                                     return;
                                 }
+                            } else {
+                                Log.d(TAG, "Unable to retrieve transactions for acount: " + account.getId());
                             }
                         }
+                        account.setTransactions(transactions);
+                        setUserCallback(userViewModel, account);
                     }
                 });
-    }
 
-    private void assignTransaction(Transaction transaction){
-        if(transaction.getAccountId() != null){
-            for (Account account : mainActivity.getUser().getAccounts()) {
-                if(transaction.getAccountId().equals(account.getId())){
-                    account.addOrUpdateTransaction(transaction);
-                }
-            }
-        }
-        try{
-            accountBalanceFragment.updateViews();
-        } catch (NullPointerException nPEX){
-            Log.w(TAG, "Got a NullPointerException while trying to use accountBalanceFragment.updateViews(): \n" + nPEX.toString());
-        }
 
     }
 
-    // level of abstractions is decent on every function below this line:
-    public void getAccount(final GetAccountListener accountListener, String id){
+    public void getAccount(final GetAccountListener accountListener, String id) {
         final String accountId = id;
         db.collection("accounts").document(id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
-                    try{
+                    try {
                         String name = doc.getString("name");
                         String type = doc.getString("type");
                         BigDecimal balance = BigDecimal.valueOf(doc.getDouble("balance"));
-                        accountListener.onSuccess(new Account(accountId, name, type, balance));
-                    } catch (NullPointerException nPEX){
-                        accountListener.onError();
+                        accountListener.onGetAccountSuccess(new Account(accountId, name, type, balance));
+                    } catch (NullPointerException nPEX) {
+                        accountListener.onGetAccountError();
                     }
                 } else {
-                    accountListener.onError();
+                    accountListener.onGetAccountError();
                 }
             }
         });
     }
 
-    // Could probably fetch the userId straight from firebase auth within this class.
-    public void saveUser(String userId, String name, Date dayOfBirth, String branch){
+    public void saveUser(String userId, String name, Date dayOfBirth, String branch) {
         Timestamp day_of_birth = new Timestamp(dayOfBirth);
         Map<String, Object> data = new HashMap<>();
         data.put("name", name);
@@ -194,9 +164,9 @@ public class FireStoreRepo {
         db.collection("users").document(userId)
                 .set(data)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d(TAG, "DocumentSnapshot successfully written!");
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -207,7 +177,7 @@ public class FireStoreRepo {
                 });
     }
 
-    public void updateUserBranch(final String userId, String branch){
+    public void updateUserBranch(final String userId, String branch) {
         db.collection("users").document(userId).update("branch", branch)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -224,7 +194,7 @@ public class FireStoreRepo {
 
     }
 
-    public void saveAccount(String userId, String name, String type, BigDecimal bigDecimalBalance){
+    public void saveAccount(String userId, String name, String type, BigDecimal bigDecimalBalance) {
         double balance = bigDecimalBalance.doubleValue();
         Map<String, Object> data = new HashMap<>();
         data.put("user_id", userId);
@@ -248,7 +218,7 @@ public class FireStoreRepo {
                 });
     }
 
-    public void saveTransaction(Transaction transaction){
+    public void saveTransaction(Transaction transaction) {
         double amount = transaction.getAmount().doubleValue();
         Timestamp entry_date = new Timestamp(transaction.getEntryDate());
         Map<String, Object> data = new HashMap<>();
@@ -261,7 +231,7 @@ public class FireStoreRepo {
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "Transaction with ID: " + documentReference.getId() + " was successfully");
+                        Log.d(TAG, "Transaction with ID: " + documentReference.getId() + " was successfully created.");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -272,7 +242,14 @@ public class FireStoreRepo {
                 });
     }
 
-    private void adjustTimeZone(){
+    // Utility
+    private void setUserCallback(UserViewModel userViewModel, Account account){
+        User user = userViewModel.getUser().getValue();
+        user.addOrUpdateAccount(account);
+        userViewModel.getUser().setValue(user);
+    }
+
+    private void adjustTimeZone() {
         // Could probably find a more dynamic way to do this. Apparently my JVM & my compiler operates in different time zones.
         TimeZone timeZone;
         timeZone = TimeZone.getTimeZone("GMT+2:00");

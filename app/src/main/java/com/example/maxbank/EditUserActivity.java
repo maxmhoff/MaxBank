@@ -29,9 +29,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class EditUserActivity extends AppCompatActivity {
-
-
     private final String TAG = "EditUserActivity";
+    private final String USER_KEY = "USER_KEY";
 
     private FireStoreRepo fireStoreRepo;
     private FirebaseAuth mAuth;
@@ -52,7 +51,7 @@ public class EditUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_user);
         Intent intent = getIntent();
-        user = intent.getExtras().getParcelable(getString(R.string.USER_KEY));
+        user = intent.getExtras().getParcelable(USER_KEY);
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         fireStoreRepo = new FireStoreRepo();

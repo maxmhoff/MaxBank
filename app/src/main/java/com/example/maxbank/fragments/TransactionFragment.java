@@ -9,6 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +27,7 @@ import com.example.maxbank.fragments.dialogs.NemIdDialogFragment;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.User;
 import com.example.maxbank.utilities.TransactionHelper;
+import com.example.maxbank.viewmodels.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -32,10 +37,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class TransactionFragment extends Fragment {
-    private static final String USER_KEY = "USER_KEY";
+    private static final String TAG = "TransactionFragment";
     private static final int NEM_ID_VERIFICATION = 1;
 
-    private User user;
+    private UserViewModel userViewModel;
+
     private TransactionHelper th;
 
     private View mView;
@@ -47,27 +53,28 @@ public class TransactionFragment extends Fragment {
     private AutoCompleteTextView inputFixedTransfer;
     private MaterialButton btnConfirm;
 
-
     private OnTransactionInteractionListener mListener;
 
     public TransactionFragment() {
         // Required empty public constructor
     }
 
-    public static TransactionFragment newInstance(User user) {
+    public static TransactionFragment newInstance() {
         TransactionFragment fragment = new TransactionFragment();
-        Bundle args = new Bundle();
-        args.putParcelable(USER_KEY, user);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            user = getArguments().getParcelable(USER_KEY);
-        }
+        userViewModel = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
+        final Observer<User> userObserver = new Observer<User>() {
+            @Override
+            public void onChanged(User user) {
+                // update UI
+            }
+        };
+        userViewModel.getUser().observe(this, userObserver);
     }
 
     @Override
@@ -118,7 +125,7 @@ public class TransactionFragment extends Fragment {
             inputFromAccount = mView.findViewById(R.id.input_from_account);
             inputToAccount = mView.findViewById(R.id.input_to_account);
             ArrayList<String> accounts = new ArrayList<>();
-            for (Account account : user.getAccounts()) {
+            for (Account account : userViewModel.getUser().getValue().getAccounts()) {
                 accounts.add(account.getName());
             }
             ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), R.layout.dropdown_menu_popup_item, accounts);
@@ -169,19 +176,20 @@ public class TransactionFragment extends Fragment {
 
 
         if(fromAccount != null && toAccount != null){
-            th = new TransactionHelper(getContext(), getView(), user, fromAccount, toAccount, amount);
+            th = new TransactionHelper(getContext(), getView(), userViewModel.getUser().getValue(), fromAccount, toAccount, amount);
             if(th.validate()){
                 if(th.checkIfNemIdIsNeeded()){
                     showNemIDDialog();
                 } else {
                     th.submit();
+                    onSubmitAnimation();
                 }
             }
         }
     }
 
     private Account retrieveAccount(String accountName){
-        for (Account account : user.getAccounts()) {
+        for (Account account : userViewModel.getUser().getValue().getAccounts()) {
             if(account.getName().equals(accountName)){
                 return account;
             }
@@ -211,6 +219,7 @@ public class TransactionFragment extends Fragment {
 
                 if (resultCode == Activity.RESULT_OK) {
                     th.submit();
+                    onSubmitAnimation();
                     toggleViewsEnabled(true);
 
                 } else if (resultCode == Activity.RESULT_CANCELED){
@@ -227,6 +236,28 @@ public class TransactionFragment extends Fragment {
         inputFromAccount.setEnabled(toggle);
         inputToAccount.setEnabled(toggle);
         btnConfirm.setEnabled(toggle);
+    }
+
+    private void onSubmitAnimation(){
+        toggleViewsEnabled(false);
+        resetViews();
+        Snackbar.make(getView(), R.string.snackbar_transaction_succeeded, Snackbar.LENGTH_LONG).show();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                toggleViewsEnabled(true);
+
+            }
+        }, getResources().getInteger(R.integer.on_submit_animation));
+    }
+
+    private void resetViews(){
+        toggleFixedTransfer.setChecked(false);
+        inputAmount.setText(null);
+        inputFromAccount.setText(null);
+        inputToAccount.setText(null);
+        inputFixedTransfer.setText(null);
     }
 }
 

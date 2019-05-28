@@ -5,12 +5,13 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,12 +26,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 
-import com.example.maxbank.MainActivity;
 import com.example.maxbank.R;
 import com.example.maxbank.adapters.AccountAdapter;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.User;
 import com.example.maxbank.repositories.FireStoreRepo;
+import com.example.maxbank.viewmodels.UserViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -38,36 +39,16 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.math.BigDecimal;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnAccountBalanceInteractionListener} interface
- * to handle interaction events.
- * Use the {@link AccountBalanceFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class AccountBalanceFragment extends Fragment implements AccountAdapter.OnItemClickListener {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    private User user;
-
     private static final String TAG = "AccountBalanceFragment";
+
+    private UserViewModel userViewModel;
 
     private View mView;
 
     private RecyclerView accounts;
     private FloatingActionButton fab;
-
-    private AccountFragment accountFragment = new AccountFragment();
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnAccountBalanceInteractionListener mListener;
 
@@ -75,30 +56,22 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AccountBalanceFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AccountBalanceFragment newInstance(String param1, String param2) {
+    public static AccountBalanceFragment newInstance() {
         AccountBalanceFragment fragment = new AccountBalanceFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            user = getArguments().getParcelable(getString(R.string.USER_KEY));
-        }
+        userViewModel = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
+        final Observer<User> userObserver = new Observer<User>() {
+            @Override
+            public void onChanged(User user) {
+                updateViews();
+            }
+        };
+        userViewModel.getUser().observe(this, userObserver);
     }
 
     @Override
@@ -110,6 +83,11 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
         }
         initViews();
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -130,27 +108,18 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
         mView = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-
     public interface OnAccountBalanceInteractionListener {
         void onFragmentInteraction(String title);
     }
 
     private void initViews(){
         accounts = mView.findViewById(R.id.accounts);
-        updateViews();
         fab = mView.findViewById(R.id.fab);
         fab.hide();
         fab.setOnClickListener(onClickListener());
+
+        updateViews();
+
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -161,13 +130,14 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
 
     }
 
-    public void updateViews(){
+    private void updateViews(){
         // null check since updateViews() should only be used when the view is active.
         if(mView != null){
             accounts = mView.findViewById(R.id.accounts);
             try {
-                if (user.getAccounts() != null) {
-                    AccountAdapter accountAdapter = new AccountAdapter(mView.getContext(), user.getAccounts());
+                if (userViewModel.getUser().getValue().getAccounts() != null) {
+                    AccountAdapter accountAdapter =
+                            new AccountAdapter(mView.getContext(), userViewModel.getUser().getValue().getAccounts());
                     accounts.setAdapter(accountAdapter);
                     accountAdapter.setOnItemClickListener(AccountBalanceFragment.this);
                     accounts.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -177,28 +147,22 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
                     accounts.setLayoutAnimation(animation);
 
                 } else {
-                    Log.w(TAG, "Failed to init the accountAdapter since \"user.getAccounts\" was null.");
+                    Log.d(TAG, "Failed to init the accountAdapter since \"userViewModel.getAccounts\" was null.");
                 }
             } catch (NullPointerException nPEX){
                 Log.d(TAG, "Encountered a NullPointerException when trying to retrieve account");
             }
         }
-
-        accountFragment.updateViews();
-
     }
 
     @Override
     public void onItemClick(int position) {
         fab.hide();
-        Account account = user.getAccounts().get(position);
+        Account account = userViewModel.getUser().getValue().getAccounts().get(position);
         FragmentManager fm = getActivity().getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.setCustomAnimations(R.anim.slide_in_bottom, R.anim.stay_put, R.anim.fade_in, R.anim.slide_out_bottom);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(getString(R.string.ACCOUNT_KEY), account);
-        accountFragment.setArguments(bundle);
-        ft.replace(R.id.fragment_container , accountFragment);
+        ft.replace(R.id.fragment_container , AccountFragment.newInstance(account));
         ft.addToBackStack(null);
         ft.commit();
     }
@@ -244,20 +208,20 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
 
                                             // making sure the account name isn't already in use.
                                             boolean accountNameTaken = false;
-                                            for (Account account: user.getAccounts()) {
+                                            for (Account account: userViewModel.getUser().getValue().getAccounts()) {
                                                 if(inputAccountName.getText().toString().toLowerCase().equals(account.getName().toLowerCase())){
                                                     accountNameTaken = true;
                                                 }
                                             }
                                             if(!accountNameTaken){
-                                                //making sure a user has a branch assigned if the user is trying to make a business account.
+                                                //making sure a userViewModel has a branch assigned if the userViewModel is trying to make a business account.
                                                 String type = typeConversion(textViewAccountType.getText().toString());
-                                                if(type.equals("business") && ((MainActivity) getActivity()).getUser().getBranch().equals("Ingen")){
+                                                if(type.equals("business") && userViewModel.getUser().getValue().getBranch().equals("Ingen")){
                                                     Snackbar.make(v, R.string.snackbar_business_account_without_branch, Snackbar.LENGTH_LONG).show();
                                                 } else {
                                                     FireStoreRepo fireStoreRepo = new FireStoreRepo();
                                                     fireStoreRepo.saveAccount(
-                                                            user.getId(),
+                                                            userViewModel.getUser().getValue().getId(),
                                                             inputAccountName.getText().toString(),
                                                             type,
                                                             BigDecimal.valueOf(0));
@@ -276,6 +240,7 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
             }
         };
     }
+
     private String typeConversion(String type){
         switch (type.toLowerCase()){
             case "privat":

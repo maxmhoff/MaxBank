@@ -112,14 +112,14 @@ public class TransactionHelper implements GetAccountListener {
     }
 
     @Override
-    public void onSuccess(Account account) {
+    public void onGetAccountSuccess(Account account) {
         receiver = account;
         receiverAccountIsIdentified = true;
         createTransactions();
     }
 
     @Override
-    public void onError() {
+    public void onGetAccountError() {
         Log.d(TAG, "Was unable to get account.");
     }
 }

@@ -64,15 +64,8 @@ public class Account implements Parcelable {
         return balance;
     }
 
-    public void addOrUpdateTransaction(Transaction transaction){
-        boolean alreadyExisted = false;
-        for (int i = 0; i < transactions.size(); i++) {
-            if(transaction.getId().equals(transactions.get(i).getId())){
-                transactions.set(i,transaction);
-                alreadyExisted = true;
-            }
-        }
-        if(!alreadyExisted) transactions.add(transaction);
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
         sortTransactions();
         updateBalance();
     }

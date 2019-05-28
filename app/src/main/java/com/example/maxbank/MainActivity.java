@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -16,8 +18,10 @@ import com.example.maxbank.fragments.AccountBalanceFragment;
 import com.example.maxbank.fragments.AccountFragment;
 import com.example.maxbank.fragments.PaymentFragment;
 import com.example.maxbank.fragments.TransactionFragment;
+
 import com.example.maxbank.objects.User;
 import com.example.maxbank.repositories.FireStoreRepo;
+import com.example.maxbank.viewmodels.UserViewModel;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -29,6 +33,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -38,17 +44,15 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = "MainActivity";
     private static final String FRAGMENT_STATE = "FRAGMENT_STATE";
+    private static final String USER_KEY = "USER_KEY";
 
     public int fragmentId;
 
-    private FirebaseAuth mAuth;
-    private User user;
+    private UserViewModel userViewModel;
     private FirebaseUser currentUser;
     private FireStoreRepo fireStoreRepo;
 
     private FragmentManager fm = getSupportFragmentManager();
-    private AccountBalanceFragment accountBalanceFragment = new AccountBalanceFragment();
-    private PaymentFragment paymentFragment = new PaymentFragment();
 
     private TextView textViewTitle;
     private ImageView iconSettings;
@@ -58,28 +62,36 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+        final Observer<User> userObserver = new Observer<User>() {
+            @Override
+            public void onChanged(User user) {
+                // Update UI here.
+            }
+        };
+        userViewModel.getUser().observe(this, userObserver);
+
         fragmentId = R.id.account_balance;
+        initViews();
 
         if(savedInstanceState != null) {
             try {
                 fragmentId = savedInstanceState.getInt(FRAGMENT_STATE);
-                openFragment(fragmentId);
+
 
             } catch (NullPointerException nPEX) {
                 Log.d(TAG, " could not retrieve fragmentId from savedInstanceState.");
             }
         }
-        initViews();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        fireStoreRepo = new FireStoreRepo(currentUser.getUid(), this);
-        fireStoreRepo.getUser();
-
+        fireStoreRepo = new FireStoreRepo();
+        fireStoreRepo.getUser(currentUser.getUid(), userViewModel);
+        openFragment(fragmentId);
     }
 
     @Override
@@ -111,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 if(v.getId() == R.id.icon_settings){
+                    Animation rotateAnimation = AnimationUtils.loadAnimation(MainActivity.this, R.anim.rotate_cog);
+                    iconSettings.startAnimation(rotateAnimation);
                     showPopup(v);
                 }
             }
@@ -155,20 +169,18 @@ public class MainActivity extends AppCompatActivity implements
         clearBackStack();
         fragmentId = id;
         FragmentTransaction transaction = fm.beginTransaction();
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(getString(R.string.USER_KEY), user);
+
         switch (id){
             case R.id.account_balance:
-                accountBalanceFragment.setArguments(bundle);
-                transaction.replace(R.id.fragment_container, accountBalanceFragment);
+                transaction.replace(R.id.fragment_container, AccountBalanceFragment.newInstance());
                 transaction.commit();
                 break;
             case R.id.pay:
-                transaction.replace(R.id.fragment_container, PaymentFragment.newInstance(user));
+                transaction.replace(R.id.fragment_container, PaymentFragment.newInstance());
                 transaction.commit();
                 break;
             case R.id.transaction:
-                transaction.replace(R.id.fragment_container, TransactionFragment.newInstance(user));
+                transaction.replace(R.id.fragment_container, TransactionFragment.newInstance());
                 transaction.commit();
                 break;
         }
@@ -176,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void openEditUserActivity(){
         Intent intent = new Intent(this, EditUserActivity.class);
-        intent.putExtra(getString(R.string.USER_KEY), user);
+        intent.putExtra(USER_KEY, userViewModel.getUser().getValue());
         startActivity(intent);
     }
 
@@ -191,17 +203,5 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onFragmentInteraction(String title) {
         textViewTitle.setText(title);
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public AccountBalanceFragment getAccountBalanceFragment() {
-        return accountBalanceFragment;
     }
 }

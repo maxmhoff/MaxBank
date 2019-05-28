@@ -3,6 +3,7 @@ package com.example.maxbank.objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +24,7 @@ public class User implements Parcelable {
         this.name = name;
         this.dayOfBirth = dayOfBirth;
         this.branch = branch;
+        accounts = new ArrayList<>();
     }
 
     protected User(Parcel in) {
@@ -72,10 +74,7 @@ public class User implements Parcelable {
                 (calDayOfBirth.get(MONTH) == calNow.get(MONTH) && calDayOfBirth.get(DATE) > calNow.get(DATE))) {
             age--;
         }
-        if(age >= 77){
-            return true;
-        }
-        return false;
+        return age >= 77;
     }
 
     public List<Account> getAccounts() {
@@ -84,6 +83,17 @@ public class User implements Parcelable {
 
     public void setAccounts(List<Account> accounts) {
         this.accounts = accounts;
+    }
+
+    public void addOrUpdateAccount(Account account){
+        boolean alreadyExisted = false;
+        for (int i = 0; i < accounts.size(); i++) {
+                if(account.getId().equals(accounts.get(i).getId())){
+                accounts.set(i,account);
+                alreadyExisted = true;
+            }
+        }
+        if(!alreadyExisted) accounts.add(account);
     }
 
     @Override

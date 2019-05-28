@@ -10,7 +10,10 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +28,7 @@ import com.example.maxbank.fragments.dialogs.NemIdDialogFragment;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.User;
 import com.example.maxbank.utilities.TransactionHelper;
+import com.example.maxbank.viewmodels.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -33,24 +37,13 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OnPaymentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link PaymentFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class PaymentFragment extends Fragment {
     private static final String TAG = "PaymentFragment";
-    private static final String USER_KEY = "USER_KEY";
     private static final int NEM_ID_VERIFICATION = 1;
 
     private View mView;
 
-    private TransactionHelper th;
-    private User user;
+    private UserViewModel userViewModel;
 
     private TextInputEditText inputAmount;
     private CheckBox toggleFixedTransfer;
@@ -60,26 +53,30 @@ public class PaymentFragment extends Fragment {
     private AutoCompleteTextView inputFixedTransfer;
     private MaterialButton btnConfirm;
 
+    private TransactionHelper th;
+
     private OnPaymentInteractionListener mListener;
 
     public PaymentFragment() {
         // Required empty public constructor
     }
 
-    public static PaymentFragment newInstance(User user) {
+    public static PaymentFragment newInstance() {
         PaymentFragment fragment = new PaymentFragment();
-        Bundle args = new Bundle();
-        args.putParcelable(USER_KEY, user);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            user = getArguments().getParcelable(USER_KEY);
-        }
+        userViewModel = ViewModelProviders.of(getActivity()).get(UserViewModel.class);
+        final Observer<User> userObserver = new Observer<User>() {
+            @Override
+            public void onChanged(User user) {
+
+            }
+        };
+        userViewModel.getUser().observe(this, userObserver);
     }
 
     @NonNull
@@ -99,7 +96,6 @@ public class PaymentFragment extends Fragment {
         return mView;
     }
 
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -115,6 +111,24 @@ public class PaymentFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case NEM_ID_VERIFICATION:
+
+                if (resultCode == Activity.RESULT_OK) {
+                    th.submit();
+                    onSubmitAnimation();
+
+                } else if (resultCode == Activity.RESULT_CANCELED){
+                    Snackbar.make(getView(), R.string.snackbar_nem_id_error, Snackbar.LENGTH_SHORT).show();
+                    toggleViewsEnabled(true);
+                }
+
+                break;
+        }
     }
 
     public interface OnPaymentInteractionListener {
@@ -135,7 +149,7 @@ public class PaymentFragment extends Fragment {
 
         inputFromAccount = mView.findViewById(R.id.input_from_account);
         ArrayList<String> accounts = new ArrayList<>();
-        for (Account account : user.getAccounts()) {
+        for (Account account : userViewModel.getUser().getValue().getAccounts()) {
             accounts.add(account.getName());
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), R.layout.dropdown_menu_popup_item, accounts);
@@ -182,19 +196,21 @@ public class PaymentFragment extends Fragment {
         BigDecimal amount = new BigDecimal(inputAmount.getText().toString());
 
         if(fromAccount != null && inputToAccount != null){
-            th = new TransactionHelper(getContext(), getView(), user, fromAccount, amount, inputToAccount.getText().toString());
+            th = new TransactionHelper(getContext(), getView(), userViewModel.getUser().getValue(), fromAccount, amount, inputToAccount.getText().toString());
             if(th.validate()){
                 if(th.checkIfNemIdIsNeeded()){
                     showNemIDDialog();
                 } else {
+                    // this serves as a placeholder. Never triggered since NemID always is needed on payments currently.
                     th.submit();
+                    onSubmitAnimation();
                 }
             }
         }
     }
 
     private Account retrieveAccount(String accountName){
-        for (Account account : user.getAccounts()) {
+        for (Account account : userViewModel.getUser().getValue().getAccounts()) {
             if(account.getName().equals(accountName)){
                 return account;
             }
@@ -217,28 +233,33 @@ public class PaymentFragment extends Fragment {
         dialogFrag.show(getFragmentManager().beginTransaction(), "dialog");
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch(requestCode) {
-            case NEM_ID_VERIFICATION:
-
-                if (resultCode == Activity.RESULT_OK) {
-                    th.submit();
-                    toggleViewsEnabled(true);
-
-                } else if (resultCode == Activity.RESULT_CANCELED){
-                    Snackbar.make(getView(), R.string.snackbar_nem_id_error, Snackbar.LENGTH_SHORT).show();
-                    toggleViewsEnabled(true);
-                }
-
-                break;
-        }
-    }
 
     private void toggleViewsEnabled(boolean toggle){
         inputAmount.setEnabled(toggle);
         inputFromAccount.setEnabled(toggle);
         inputToAccount.setEnabled(toggle);
         btnConfirm.setEnabled(toggle);
+    }
+
+    private void onSubmitAnimation(){
+        toggleViewsEnabled(false);
+        resetViews();
+        Snackbar.make(getView(), R.string.snackbar_payment_succeeded, Snackbar.LENGTH_LONG).show();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                toggleViewsEnabled(true);
+
+            }
+        }, getResources().getInteger(R.integer.on_submit_animation));
+    }
+
+    private void resetViews(){
+        toggleFixedTransfer.setChecked(false);
+        inputAmount.setText(null);
+        inputFromAccount.setText(null);
+        inputToAccount.setText(null);
+        inputFixedTransfer.setText(null);
     }
 }

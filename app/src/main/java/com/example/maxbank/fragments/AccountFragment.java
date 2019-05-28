@@ -37,12 +37,8 @@ import java.util.ArrayList;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class AccountFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
     private static final String TAG = "AccountFragment";
+    private static final String ACCOUNT_KEY = "ACCOUNT_KEY";
 
     private MediaPlayer sfxOpen;
     private MediaPlayer sfxClose;
@@ -53,30 +49,17 @@ public class AccountFragment extends Fragment {
     private TextView headline;
     private RecyclerView transactions;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private OnAccountInteractionListener mListener;
 
     public AccountFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AccountFragment.
-     */
     // TODO: Rename and change types and number of parameters
-    public static AccountFragment newInstance(String param1, String param2) {
+    public static AccountFragment newInstance(Account account) {
         AccountFragment fragment = new AccountFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putParcelable(ACCOUNT_KEY, account);
         fragment.setArguments(args);
         return fragment;
     }
@@ -85,7 +68,7 @@ public class AccountFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            account = getArguments().getParcelable(getString(R.string.ACCOUNT_KEY));
+            account = getArguments().getParcelable(ACCOUNT_KEY);
         }
 
         // loading sounds
@@ -120,6 +103,7 @@ public class AccountFragment extends Fragment {
         super.onDetach();
         mListener = null;
         mView = null;
+        // releasing mediaplayer
         sfxOpen.release();
         sfxClose.release();
     }

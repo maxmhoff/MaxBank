@@ -80,7 +80,8 @@
                     android:id="@+id/input_from_account"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:soundEffectsEnabled="false"/>
+                    android:soundEffectsEnabled="false"
+                    android:editable="false"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -120,7 +121,8 @@
                     android:id="@+id/input_fixed_transfer_options"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:soundEffectsEnabled="false"/>
+                    android:soundEffectsEnabled="false"
+                    android:editable="false"/>
             </com.google.android.material.textfield.TextInputLayout>
 
 

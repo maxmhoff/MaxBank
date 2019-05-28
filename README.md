@@ -35,26 +35,32 @@ Another requirement was to add fixed transfers. I've added the views for it, but
 ## TO-DO
 A list of things I would like to add in the future:
 
-1. Add a higher level of abstraction to the FireStoreRepo by using listeners.
+1. Some of dialog boxes could use some optimizing: Input validation and improved visuals etc. 
 
-2. Some of dialog boxes could use some optimizing: Input validation and improved visuals etc. 
+2. A custom login page. Right now I'm using the default one provided by the Firebase UI.
 
-3. A custom login page. Right now I'm using the default one provided by the Firebase UI.
+3. Add a better looking "settings PopupMenu". ListPopupMenu could be a friend in need... but I have got to look into that!
 
-4. Add a better looking "settings PopupMenu". ListPopupMenu could be a friend in need... but I have got to look into that!
+4. Implement delete methods in the repository and create tests.
 
 5. Create a super interesting and cool icon for the app.
 
 ## Known bugs
-A list of bugs that I am aware of, but have not been able to fix yet:
-* If a transaction is added or modified while viewing the corresponding account (AccountFragment) the size of the item_layout stretches vertically. 
-_This might be due to the decorator, but I am uncertain._
+A list of bugs that I am aware of:
 
-* The Create Account DialogBox associated to the Floating Action Button can be opened multiple times. _I should probably introduce a boolean or make it into a Dialog Fragment!_
-
-* Once in a while the account_balance view fails to get refreshed when a new account is added.
-I suspect this has something to do with the callback from the firestore, but I'm not quite sure.
+* The Create Account DialogBox associated to the Floating Action Button can be opened multiple times.
 
 * The Create Account DialogBox does not survive state changes. The solution is to change it into a dialog fragment.
 
-* If orientation changes while Exposed Dropdown is active the arrayadapter loses all other entries than the one currently selected.
+
+
+## Fixed bugs
+
+* _If a transaction is added or modified while viewing the corresponding account (AccountFragment) the size of the item_layout stretches vertically._\
+(28/05/2019) This is no longer an issue, since the overview of transactions is not updated while it's active.
+
+* _If orientation changes while Exposed Dropdown is active the arrayadapter loses all other entries than the one currently selected._\
+(28/05/2019) I have not been able replicate this for a while, and thus I consider it fixed, but I do not know how.
+
+* _Once in a while the account_balance view fails to get refreshed when a new account is added._\
+(28/05/2019) After implementing the UserViewModel class, this should no longer be an issue.
