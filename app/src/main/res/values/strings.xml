@@ -44,7 +44,7 @@
     <string name="fixed_transfer">Fast overførsel</string>
 
     <string name="save_changes">Gem ændringer</string>
-    <string name="info_edit_user">Tryk på switchen for at slå redigering til:</string>
+    <string name="info_edit_user">Slå redigering til:</string>
     <string name="helper_text_password">Mindst seks tegn.</string>
 
     <string name="error_name_character">Dit navn indeholder uønskede tegn.</string>
