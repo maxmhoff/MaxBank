@@ -64,6 +64,11 @@ public class TransactionHelper implements GetAccountListener {
     }
 
     public Boolean validate(){
+        if(sender.getId().equals(receiver.getId())){
+            Snackbar.make(view, R.string.error_same_account_id, Snackbar.LENGTH_LONG ).show();
+            return false;
+        }
+
         // sufficient funds
         if(sender.getBalance().compareTo(amount) < 0){
             Snackbar.make(view, R.string.snackbar_insufficient_funds , Snackbar.LENGTH_LONG).show();

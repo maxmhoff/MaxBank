@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="fab_show_delay">800</integer>
-    <integer name="on_submit_animation">3500</integer>
+    <integer name="on_submit_animation">3000</integer>
     <integer name="anim_duration_long">700</integer>
     <integer name="anim_duration_medium">500</integer>
     <integer name="anim_duration_short">300</integer>

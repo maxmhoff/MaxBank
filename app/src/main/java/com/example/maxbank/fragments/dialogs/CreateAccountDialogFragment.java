@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,10 +24,9 @@ import com.example.maxbank.viewmodels.UserViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,41 +34,21 @@ import androidx.fragment.app.DialogFragment;
 
 public class CreateAccountDialogFragment extends DialogFragment {
 
-    private FirebaseAuth mAuth;
-    private FirebaseUser currentUser;
-
-    private Activity mActivity;
-
     public static CreateAccountDialogFragment newInstance(){
         return new CreateAccountDialogFragment();
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof Activity){
-            mActivity = (Activity) context;
-        }
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         final UserViewModel userViewModel = ((MainActivity) getActivity()).getUserViewModel();
-
         final View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.form_create_account, (ViewGroup) getView(), false);
 
         // populating the spinner
+
         final AutoCompleteTextView textViewAccountType = viewInflated.findViewById(R.id.create_account_type);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
-                R.layout.dropdown_menu_popup_item, getResources().getStringArray(R.array.account_types));
+                R.layout.dropdown_menu_popup_item, getAccountTypes(userViewModel));
         if(textViewAccountType != null){
             textViewAccountType.setAdapter(adapter);
         }
@@ -99,44 +80,63 @@ public class CreateAccountDialogFragment extends DialogFragment {
             @Override
             public void onShow(DialogInterface dialog) {
                 Button btnPositive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                btnPositive.setEnabled(false);
+                textViewAccountType.addTextChangedListener(textWatcher(btnPositive, textViewAccountType, inputAccountName));
+                inputAccountName.addTextChangedListener(textWatcher(btnPositive, textViewAccountType, inputAccountName));
                 btnPositive.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // checking if inputs are empty before calling the repo to store the account.
-                        if(!inputAccountName.getText().toString().equals("") &&
-                                !textViewAccountType.getText().toString().equals("")){
+                        textViewAccountType.setError(null);
+                        inputAccountName.setError(null);
 
-                            // making sure the account name isn't already in use.
-                            boolean accountNameTaken = false;
-                            for (Account account: userViewModel.getUser().getValue().getAccounts()) {
-                                if(inputAccountName.getText().toString().toLowerCase().equals(account.getName().toLowerCase())){
-                                    accountNameTaken = true;
-                                }
-                            }
-                            if(!accountNameTaken){
-                                //making sure a userViewModel has a branch assigned if the userViewModel is trying to make a business account.
-                                String type = typeConversion(textViewAccountType.getText().toString());
-                                if(type.equals("business") && userViewModel.getUser().getValue().getBranch().equals("Ingen")){
-                                    Snackbar.make(getView(), R.string.snackbar_business_account_without_branch, Snackbar.LENGTH_LONG).show();
-                                } else {
-                                    FireStoreRepo fireStoreRepo = new FireStoreRepo();
-                                    fireStoreRepo.saveAccount(
-                                            userViewModel.getUser().getValue().getId(),
-                                            inputAccountName.getText().toString(),
-                                            type,
-                                            BigDecimal.valueOf(0));
-                                    dismiss();
-                                }
-                            } else {
-                                Snackbar.make(getView(), R.string.snackbar_account_name_in_use, Snackbar.LENGTH_LONG).show();
-                            }
 
+                        String type = typeConversion(textViewAccountType.getText().toString());
+
+                        if (validateInput(type, userViewModel, textViewAccountType, inputAccountName)) {
+                            FireStoreRepo fireStoreRepo = new FireStoreRepo();
+                            fireStoreRepo.saveAccount(
+                                    userViewModel.getUser().getValue().getId(),
+                                    inputAccountName.getText().toString(),
+                                    type,
+                                    BigDecimal.valueOf(0));
+                            dismiss();
                         }
                     }
                 });
             }
         });
         return builder;
+    }
+
+    private boolean validateInput(String type, UserViewModel userViewModel, AutoCompleteTextView textViewAccountType, TextInputEditText inputAccountName){
+        boolean userInputAcceptable = true;
+
+        // making sure the account name isn't already in use.
+        for (Account account: userViewModel.getUser().getValue().getAccounts()) {
+            if(inputAccountName.getText().toString().toLowerCase().equals(account.getName().toLowerCase())){
+                inputAccountName.setError(getString(R.string.error_account_name_in_use));
+                userInputAcceptable = false;
+            }
+        }
+
+        return userInputAcceptable;
+    }
+    private String[] getAccountTypes(UserViewModel userViewModel){
+        // removing business type, if user has no branch assigned.
+        String[] accountTypes = getResources().getStringArray(R.array.account_types);
+
+        if(userViewModel.getUser().getValue().getBranch().equals("Ingen")){
+            String[] fewerAccountTypes = new String[accountTypes.length-1];
+            int j = 0;
+            for (int i = 0; i < accountTypes.length-1; i++) {
+                if(!accountTypes[i].equals("Ingen")){
+                    fewerAccountTypes[j] = accountTypes[i];
+                    j++;
+                }
+            }
+            return fewerAccountTypes;
+        }
+        return accountTypes;
     }
 
     private String typeConversion(String type){
@@ -153,5 +153,35 @@ public class CreateAccountDialogFragment extends DialogFragment {
                 return "business";
         }
         return null;
+    }
+
+    private TextWatcher textWatcher(final Button btnPositive, final AutoCompleteTextView textViewAccountType, final TextInputEditText inputAccountName) {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                checkIfAnyFieldIsEmpty(btnPositive, textViewAccountType, inputAccountName);
+            }
+        };
+    }
+
+    private void checkIfAnyFieldIsEmpty(Button btnPositive, AutoCompleteTextView textViewAccountType, TextInputEditText inputAccountName){
+        boolean noFieldsAreEmpty = true;
+        if(textViewAccountType.getText().length() == 0) {
+            noFieldsAreEmpty = false;
+        } else if(inputAccountName.getText().length() == 0) {
+            noFieldsAreEmpty = false;
+        }
+
+        btnPositive.setEnabled(noFieldsAreEmpty);
     }
 }

@@ -220,7 +220,6 @@ public class TransactionFragment extends Fragment {
                 if (resultCode == Activity.RESULT_OK) {
                     th.submit();
                     onSubmitAnimation();
-                    toggleViewsEnabled(true);
 
                 } else if (resultCode == Activity.RESULT_CANCELED){
                     Snackbar.make(getView(), R.string.snackbar_nem_id_error, Snackbar.LENGTH_SHORT).show();

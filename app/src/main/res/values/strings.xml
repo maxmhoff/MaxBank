@@ -3,7 +3,7 @@
     <string name="overview">OVERBLIK</string>
     <string name="pay">BETAL</string>
     <string name="pay_title">Indbetaling</string>
-    <string name="pay_info">Vælg et beløb, vælg en af dine konti og indtast modtagers kontonummer. Tryk derefter på godkend, hvis du ønsker at indbetalingen skal træde i kraft,</string>
+    <string name="pay_info">Vælg et beløb, vælg en af dine konti og indtast modtagers kontonummer. Tryk derefter på godkend, hvis du ønsker at indbetalingen skal træde i kraft.</string>
     <string name="transaction">OVERFØR</string>
     <string name="transaction_title">Overførsel</string>
     <string name="transaction_info">Vælg to konti og et beløb. Tryk derefter på godkend, hvis du ønsker at overførslen skal træde i kraft.</string>
@@ -53,14 +53,15 @@
     <string name="error_too_old">Du har indtastet en forkert fødselsdato.</string>
     <string name="error_invalid_email_address">Du skal indtaste en gyldig e-mailadresse.</string>
     <string name="error_password_too_short">Din adgangskode skal mindst bestå af seks tegn.</string>
+    <string name="error_same_account_id">Kontoen, du ønsker at overføre fra, er den samme, som den du ønsker at overføre til.</string>
+    <string name="error_business_account_without_branch">Du kan ikke oprette en erhvervskonto uden en tilknyttet filial.</string>
+    <string name="error_account_name_in_use">Det indtastede navn er allerede i brug.</string>
 
 
     <string name="snackbar_could_not_identify_receiver_account">Indbetaling mislykkedes. Vi var ikke i stand til at verificere modtagerens konto.</string>
     <string name="snackbar_password_reset_email">"Der vil snart blive sendt en e-mail til dig, hvor du kan indtaste en ny adgangskode."</string>
     <string name="snackbar_no_changes">Du foretog ingen ændringer.</string>
     <string name="snackbar_changes_saved">Dine ændringer er gemt.</string>
-    <string name="snackbar_account_name_in_use">Kontoen blev ikke oprettet, da det indtastede navn allerede er i brug.</string>
-    <string name="snackbar_business_account_without_branch">Du kan ikke oprette en erhvervskonto uden en tilknyttet filial.</string>
     <string name="snackbar_not_senior_citizen">Du kan ikke overføre fra en pensionskonto medmindre du er 77+ år.</string>
     <string name="snackbar_insufficient_funds">Beløbet, du ønsker at overføre, overskrider din kontobalance.</string>
     <string name="snackbar_nem_id_error">Dit NemId kunne ikke verificeres.</string>
