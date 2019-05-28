@@ -132,6 +132,12 @@ public class AccountFragment extends Fragment {
     private void initViews(){
         headline = mView.findViewById(R.id.headline);
         headline.setText(account.getName());
+        headline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
         transactions = mView.findViewById(R.id.transactions);
         updateViews();
     }

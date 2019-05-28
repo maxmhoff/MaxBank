@@ -47,11 +47,11 @@
     <string name="info_edit_user">Tryk på switchen for at slå redigering til:</string>
     <string name="helper_text_password">Mindst seks tegn.</string>
 
-    <string name="error_name_character">Dit navn indeholder uønskede tegn</string>
-    <string name="error_full_name_missing">Du skal indtaste dit fulde navn</string>
+    <string name="error_name_character">Dit navn indeholder uønskede tegn.</string>
+    <string name="error_full_name_missing">Du skal indtaste dit fulde navn.</string>
     <string name="error_too_young">Du skal mindst være 16 år gammel for at oprette en konto.</string>
     <string name="error_too_old">Du har indtastet en forkert fødselsdato.</string>
-    <string name="error_invalid_email_address">Du skal indtaste en gyldig e-mailadresse</string>
+    <string name="error_invalid_email_address">Du skal indtaste en gyldig e-mailadresse.</string>
     <string name="error_password_too_short">Din adgangskode skal mindst bestå af seks tegn.</string>
 
 
