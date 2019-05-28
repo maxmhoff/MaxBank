@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final String FRAGMENT_STATE = "FRAGMENT_STATE";
     private static final String USER_KEY = "USER_KEY";
 
-    public int fragmentId;
+    private int fragmentId;
 
     private UserViewModel userViewModel;
     private FirebaseUser currentUser;
@@ -203,5 +203,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onFragmentInteraction(String title) {
         textViewTitle.setText(title);
+    }
+
+    public UserViewModel getUserViewModel() {
+        return userViewModel;
     }
 }

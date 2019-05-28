@@ -178,6 +178,7 @@ public class PaymentFragment extends Fragment {
             }
         });
     }
+
     private View.OnClickListener onClickListener(){
         return new View.OnClickListener() {
             @Override
@@ -232,7 +233,6 @@ public class PaymentFragment extends Fragment {
         dialogFrag.setTargetFragment(this, NEM_ID_VERIFICATION);
         dialogFrag.show(getFragmentManager().beginTransaction(), "dialog");
     }
-
 
     private void toggleViewsEnabled(boolean toggle){
         inputAmount.setEnabled(toggle);

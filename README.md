@@ -20,7 +20,7 @@ To avoid complexity I'm *not* using the balance of the accounts in FireStore (th
 Instead I'm calculating the balance via transactions. This way the balance is automatically updated, whenever i make a transaction.
 This would be a critical mistake, if you were to make an actual bank app.
 
-I have not in any way been paying attention to the Required API. So you probably want to use the newest device/emulator. Oops.
+I have not in any way been paying attention to the Required API. So you probably want to use the newest device/emulator... oops!
 
 Part of the requirements was to assign users to the closest branch of the bank. The bank is supposed to have two branches. 
 One at Vesterbro (Copenhagen) and another one in Odense. I could have used GPS tracking for this (which undoubtedly would lead to some weird situations) 
@@ -39,22 +39,22 @@ A list of things I would like to add in the future:
 
 2. A custom login page. Right now I'm using the default one provided by the Firebase UI.
 
-3. Add a better looking "settings PopupMenu". ListPopupMenu could be a friend in need... but I have got to look into that!
+3. A better looking "settings PopupMenu". ListPopupMenu could be a friend in need... but I have got to look into that!
 
-4. Implement delete methods in the repository and create tests.
+4. Implement delete methods in the repository and create tests. Many tests!
 
-5. Create a super interesting and cool icon for the app.
+5. Create a super interesting and cool icon for the app. Very important.
 
 ## Known bugs
-A list of bugs that I am aware of:
-
-* The Create Account DialogBox associated to the Floating Action Button can be opened multiple times.
-
-* The Create Account DialogBox does not survive state changes. The solution is to change it into a dialog fragment.
-
-
+A list of bugs that I am aware of: (Empty at the moment)
 
 ## Fixed bugs
+* _The Create Account DialogBox associated to the Floating Action Button can be opened multiple times._\
+(28/05/2019) Fixed by implementing a CreateAccountDialogFragment.
+
+* _The Create Account DialogBox does not survive state changes._\
+(28/05/2019) Fixed by implementing a CreateAccountDialogFragment.
+
 
 * _If a transaction is added or modified while viewing the corresponding account (AccountFragment) the size of the item_layout stretches vertically._\
 (28/05/2019) This is no longer an issue, since the overview of transactions is not updated while it's active.
@@ -63,4 +63,4 @@ A list of bugs that I am aware of:
 (28/05/2019) I have not been able replicate this for a while, and thus I consider it fixed, but I do not know how.
 
 * _Once in a while the account_balance view fails to get refreshed when a new account is added._\
-(28/05/2019) After implementing the UserViewModel class, this should no longer be an issue.
+(28/05/2019) After implementing the UserViewModel class this should no longer be an issue.

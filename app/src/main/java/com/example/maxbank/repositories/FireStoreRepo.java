@@ -207,7 +207,7 @@ public class FireStoreRepo {
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "Account written with ID: " + documentReference.getId());
+                        Log.d(TAG, "Account with ID: " + documentReference.getId() + " was successfully created.");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

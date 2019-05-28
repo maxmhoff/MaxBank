@@ -1,10 +1,10 @@
 package com.example.maxbank.fragments;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -22,22 +22,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 
 import com.example.maxbank.R;
 import com.example.maxbank.adapters.AccountAdapter;
+import com.example.maxbank.fragments.dialogs.CreateAccountDialogFragment;
 import com.example.maxbank.objects.Account;
 import com.example.maxbank.objects.User;
-import com.example.maxbank.repositories.FireStoreRepo;
 import com.example.maxbank.viewmodels.UserViewModel;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
-
-import java.math.BigDecimal;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class AccountBalanceFragment extends Fragment implements AccountAdapter.OnItemClickListener {
@@ -173,87 +165,23 @@ public class AccountBalanceFragment extends Fragment implements AccountAdapter.O
             public void onClick(final View v) {
                 switch (v.getId()){
                     case R.id.fab:
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogCustom).setTitle(R.string.create_account_title);
-                        final View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.form_create_account, (ViewGroup) getView(), false);
-                        builder.setView(viewInflated);
-
-                        // populating the spinner
-                        final AutoCompleteTextView textViewAccountType = viewInflated.findViewById(R.id.create_account_type);
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
-                                R.layout.dropdown_menu_popup_item, getResources().getStringArray(R.array.account_types));
-                        if(textViewAccountType != null){
-                            textViewAccountType.setAdapter(adapter);
-                        }
-
-                        final TextInputEditText inputAccountName =  viewInflated.findViewById(R.id.create_account_name);
-
-                        // to dismiss the keyboard, when we click somewhere else.
-                        inputAccountName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                            @Override
-                            public void onFocusChange(View v, boolean hasFocus) {
-                                InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.hideSoftInputFromWindow(inputAccountName.getWindowToken(), 0);
-                            }
-                        });
-
-
-                        builder.setMessage(R.string.create_account_description)
-                                .setNegativeButton(R.string.cancel, null)
-                                .setPositiveButton(R.string.create, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        // checking if inputs are empty before calling the repo to store the account.
-                                        if(!inputAccountName.getText().toString().equals("") &&
-                                                !textViewAccountType.getText().toString().equals("")){
-
-                                            // making sure the account name isn't already in use.
-                                            boolean accountNameTaken = false;
-                                            for (Account account: userViewModel.getUser().getValue().getAccounts()) {
-                                                if(inputAccountName.getText().toString().toLowerCase().equals(account.getName().toLowerCase())){
-                                                    accountNameTaken = true;
-                                                }
-                                            }
-                                            if(!accountNameTaken){
-                                                //making sure a userViewModel has a branch assigned if the userViewModel is trying to make a business account.
-                                                String type = typeConversion(textViewAccountType.getText().toString());
-                                                if(type.equals("business") && userViewModel.getUser().getValue().getBranch().equals("Ingen")){
-                                                    Snackbar.make(v, R.string.snackbar_business_account_without_branch, Snackbar.LENGTH_LONG).show();
-                                                } else {
-                                                    FireStoreRepo fireStoreRepo = new FireStoreRepo();
-                                                    fireStoreRepo.saveAccount(
-                                                            userViewModel.getUser().getValue().getId(),
-                                                            inputAccountName.getText().toString(),
-                                                            type,
-                                                            BigDecimal.valueOf(0));
-                                                }
-                                            } else {
-                                                Snackbar.make(v, R.string.snackbar_account_name_in_use, Snackbar.LENGTH_LONG).show();
-                                            }
-
-                                        }
-
-                                    }
-                                })
-                                .show();
+                        showCreateAccountDialog();
                         break;
                 }
             }
         };
     }
 
-    private String typeConversion(String type){
-        switch (type.toLowerCase()){
-            case "privat":
-                return "default";
-            case "budget":
-                return "budget";
-            case "pension":
-                return "pension";
-            case "opsparing":
-                return "savings";
-            case "erhverv":
-                return "business";
+    private void showCreateAccountDialog(){
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment prev = fm.findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
         }
-        return null;
+        ft.addToBackStack(null);
+
+        DialogFragment dialogFrag = CreateAccountDialogFragment.newInstance();
+        dialogFrag.show(getFragmentManager().beginTransaction(), "dialog");
     }
 }

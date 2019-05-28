@@ -15,8 +15,6 @@ import com.example.maxbank.R;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Random;
 
@@ -29,9 +27,6 @@ public class NemIdDialogFragment extends DialogFragment {
 
     private static final String TITLE_KEY = "TITLE_KEY";
     private String title;
-
-    private FirebaseAuth mAuth;
-    private FirebaseUser currentUser;
 
     public NemIdDialogFragment() {
         // Required empty public constructor
@@ -51,8 +46,6 @@ public class NemIdDialogFragment extends DialogFragment {
         if (getArguments() != null) {
             title = getArguments().getString(TITLE_KEY);
         }
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
     }
 
     @NonNull
