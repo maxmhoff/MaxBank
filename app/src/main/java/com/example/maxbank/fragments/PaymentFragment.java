@@ -196,7 +196,7 @@ public class PaymentFragment extends Fragment {
 
         BigDecimal amount = new BigDecimal(inputAmount.getText().toString());
 
-        if(fromAccount != null && inputToAccount != null){
+        if(fromAccount != null && inputToAccount.getText().toString().equals("") && inputAmount.getText().equals("")){
             th = new TransactionHelper(getContext(), getView(), userViewModel.getUser().getValue(), fromAccount, amount, inputToAccount.getText().toString());
             if(th.validate()){
                 if(th.checkIfNemIdIsNeeded()){

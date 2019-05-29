@@ -132,6 +132,7 @@ public class EditUserActivity extends AppCompatActivity {
         }
         if(!branch.getText().toString().equals(user.getBranch())){
             fireStoreRepo.updateUserBranch(currentUser.getUid(), branch.getText().toString());
+            finish();
             changeOccurred = true;
         }
         toggleEditing(false);
@@ -178,6 +179,7 @@ public class EditUserActivity extends AppCompatActivity {
                                 }
                             }
                         });
+                finish();
             }
         });
     }
