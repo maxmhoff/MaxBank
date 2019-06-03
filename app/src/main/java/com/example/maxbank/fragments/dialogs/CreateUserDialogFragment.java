@@ -26,6 +26,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -249,8 +250,8 @@ public class CreateUserDialogFragment extends DialogFragment {
                                 fireStoreRepo.saveUser(currentUser.getUid(), name, date, "Ingen");
 
                                 // Add initial accounts(default & budget)
-                                //fireStoreRepo.saveAccount(currentUser.getUid(), "Privat konto", "default", 0);
-                                //fireStoreRepo.saveAccount(currentUser.getUid(), "Budget konto", "budget", 0);
+                                fireStoreRepo.saveAccount(currentUser.getUid(), "Privat konto", "default", new BigDecimal(10000));
+                                fireStoreRepo.saveAccount(currentUser.getUid(), "Budget konto", "budget", new BigDecimal(0));
                                 sendResult(true);
 
                             } else {
